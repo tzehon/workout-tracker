@@ -538,31 +538,45 @@ Repeat the above with project name: `workout-tracker-prod`
       - Select **"Connect to an environment"**
       - Choose **"Production"** from the dropdown
    3. Click **"Save"**
-   4. Vercel will show DNS configuration instructions. Add at your registrar:
-      - Type: `CNAME`
-      - Name: `workout` (or `@` for root domain)
-      - Value: `cname.vercel-dns.com`
-   5. Wait for DNS propagation (usually 1-10 minutes), then click **"Refresh"**
+
+   **Configure DNS:**
+
+   After saving, the domain appears in your list with **"Invalid Configuration"** (red warning). This is expected - you need to configure DNS.
+
+   4. Click **"Learn more"** next to "Invalid Configuration" to expand DNS instructions
+   5. You'll see a **DNS Records** tab with a table showing:
+      | Type | Name | Value |
+      |------|------|-------|
+      | CNAME | `workout` | `abc123.vercel-dns-017.com.` |
+
+      *(The Value is unique to your project - copy the exact value shown)*
+
+   6. Go to your DNS provider (e.g., Cloudflare, Namecheap, Google Domains) and add this record:
+      - Type: **CNAME**
+      - Name: Copy from Vercel (e.g., `workout`)
+      - Value: Copy the full value from Vercel (e.g., `abc123.vercel-dns-017.com.`)
+
+   7. Wait for DNS propagation (1-10 minutes), then click **"Refresh"** in Vercel
+   8. Status should change to **"Valid Configuration"** (blue checkmark)
 
    **Add Staging Domain:**
-   1. Click **"Add Domain"** again
-   2. In the modal:
-      - Enter: `staging.workout.tth.dev`
-      - Select **"Connect to an environment"**
-      - Choose **"Preview"** from the dropdown
-   3. Click **"Save"**
-   4. Add DNS record:
-      - Type: `CNAME`
-      - Name: `staging.workout`
-      - Value: `cname.vercel-dns.com`
+
+   Repeat the same steps:
+   1. Click **"Add Domain"**
+   2. Enter: `staging.workout.tth.dev`
+   3. Choose **"Preview"** environment
+   4. Click **"Save"**
+   5. Expand "Learn more" → copy DNS values → add to your DNS provider
+   6. Click **"Refresh"** once DNS propagates
 
    **Final Result:**
-   Your Domains list should show:
-   | Domain | Environment |
-   |--------|-------------|
-   | `workout-tracker-xyz.vercel.app` | Production |
-   | `workout.tth.dev` | Production |
-   | `staging.workout.tth.dev` | Preview |
+
+   Your Domains list should show all domains with "Valid Configuration":
+   | Domain | Status | Environment |
+   |--------|--------|-------------|
+   | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production |
+   | `workout.tth.dev` | ✓ Valid | Production |
+   | `staging.workout.tth.dev` | ✓ Valid | Preview |
 
 ### Deployment Flow
 
