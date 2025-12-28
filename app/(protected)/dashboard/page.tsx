@@ -9,10 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { WeeklySchedule } from "@/components/dashboard/WeeklySchedule";
 import { ProgressRing } from "@/components/dashboard/ProgressRing";
 import { RecentWorkouts } from "@/components/dashboard/RecentWorkouts";
+import { WeekCompleteDialog } from "@/components/dashboard/WeekCompleteDialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ClientWorkout, SessionType } from "@/types";
 import { weeklySchedule, programPhases } from "@/lib/program-data";
 import { Play, Calendar, TrendingUp } from "lucide-react";
+
+const ALL_SESSIONS: SessionType[] = ["Push 1", "Pull 1", "Push 2", "Pull 2"];
 
 // Get today's recommended session
 function getTodaySession(): SessionType | null {
@@ -26,17 +29,55 @@ function getTodaySession(): SessionType | null {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [recentWorkouts, setRecentWorkouts] = useState<ClientWorkout[]>([]);
   const [weeklyCompletedSessions, setWeeklyCompletedSessions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showWeekCompleteDialog, setShowWeekCompleteDialog] = useState(false);
+  const [dialogDismissedForWeek, setDialogDismissedForWeek] = useState<string | null>(null);
 
   const settings = session?.user?.settings;
-  const currentPhase = settings?.currentPhase || 1;
-  const currentWeek = settings?.currentWeek || 1;
+  const currentPhase = (settings?.currentPhase || 1) as 1 | 2 | 3;
+  const currentWeek = (settings?.currentWeek || 1) as 1 | 2 | 3 | 4 | 5 | 6;
   const isDeload = currentWeek === 6;
   const todaySession = getTodaySession();
   const phaseData = programPhases.find((p) => p.phase === currentPhase);
+
+  // Check if all 4 sessions are complete
+  const isWeekComplete = ALL_SESSIONS.every((s) => weeklyCompletedSessions.includes(s));
+  const weekKey = `${currentPhase}-${currentWeek}`;
+
+  // Show dialog when week is complete (and not already dismissed for this week)
+  useEffect(() => {
+    if (isWeekComplete && !loading && dialogDismissedForWeek !== weekKey) {
+      setShowWeekCompleteDialog(true);
+    }
+  }, [isWeekComplete, loading, dialogDismissedForWeek, weekKey]);
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setShowWeekCompleteDialog(open);
+    if (!open) {
+      // Mark as dismissed for this week so it doesn't show again on refresh
+      setDialogDismissedForWeek(weekKey);
+    }
+  };
+
+  const handleAdvanceWeek = async (newPhase: 1 | 2 | 3, newWeek: 1 | 2 | 3 | 4 | 5 | 6) => {
+    const res = await fetch("/api/user", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        settings: { currentPhase: newPhase, currentWeek: newWeek },
+      }),
+    });
+
+    if (res.ok) {
+      // Update the NextAuth session to reflect new settings
+      await updateSession();
+      // Reset weekly completed sessions since we're in a new week
+      setWeeklyCompletedSessions([]);
+    }
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -78,6 +119,13 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <WeekCompleteDialog
+        open={showWeekCompleteDialog}
+        onOpenChange={handleDialogOpenChange}
+        currentPhase={currentPhase}
+        currentWeek={currentWeek}
+        onAdvance={handleAdvanceWeek}
+      />
       {/* Welcome Section */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

@@ -15,6 +15,7 @@ A full-stack web application for tracking an 18-week gymnastic rings bodyweight 
 - **Rest Timer** - Built-in timer with vibration notification on mobile
 - **Workout History** - View past workouts with all logged data
 - **Dashboard** - Current phase/week display, clickable weekly schedule, progress tracking
+- **Auto Week Progression** - Prompts to advance when all 4 sessions are complete, with options to repeat phases
 - **Exercise Progress** - Per-exercise stats with rep trends and variant history
 - **Progress Charts** - Visual charts for volume trends and completion
 - **Body Metrics** - Track body weight over time with trend charts
