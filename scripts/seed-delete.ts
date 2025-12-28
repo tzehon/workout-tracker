@@ -38,9 +38,22 @@ async function main() {
     const deleteWorkouts = await db.collection("workouts").deleteMany({ userId, isSeed: true });
     const deleteMetrics = await db.collection("bodyMetrics").deleteMany({ userId, isSeed: true });
 
+    // Reset user settings to Phase 1, Week 1
+    await db.collection("users").updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "settings.currentPhase": 1,
+          "settings.currentWeek": 1,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
     console.log(`\n✓ Deleted seed data:`);
     console.log(`  - ${deleteWorkouts.deletedCount} workouts`);
     console.log(`  - ${deleteMetrics.deletedCount} body metrics`);
+    console.log(`  - Reset user to Phase 1, Week 1`);
 
     if (deleteWorkouts.deletedCount === 0 && deleteMetrics.deletedCount === 0) {
       console.log(`\nNo seed data found. Run "npm run seed" first to create some.`);

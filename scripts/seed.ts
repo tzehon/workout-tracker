@@ -344,11 +344,44 @@ async function main() {
       console.log(`Inserted ${metrics.length} body metrics`);
     }
 
+    // Update user settings to reflect progress (next week after seeded data)
+    const nextWeek = weeks + 1;
+    let newPhase: 1 | 2 | 3;
+    let newWeek: 1 | 2 | 3 | 4 | 5 | 6;
+
+    if (nextWeek <= 6) {
+      newPhase = 1;
+      newWeek = nextWeek as 1 | 2 | 3 | 4 | 5 | 6;
+    } else if (nextWeek <= 12) {
+      newPhase = 2;
+      newWeek = (nextWeek - 6) as 1 | 2 | 3 | 4 | 5 | 6;
+    } else if (nextWeek <= 18) {
+      newPhase = 3;
+      newWeek = (nextWeek - 12) as 1 | 2 | 3 | 4 | 5 | 6;
+    } else {
+      // Completed full program, stay at end
+      newPhase = 3;
+      newWeek = 6;
+    }
+
+    await db.collection("users").updateOne(
+      { _id: userId },
+      {
+        $set: {
+          "settings.currentPhase": newPhase,
+          "settings.currentWeek": newWeek,
+          updatedAt: new Date(),
+        },
+      }
+    );
+    console.log(`Updated user settings: Phase ${newPhase}, Week ${newWeek}`);
+
     // Summary
     const phases = Math.ceil(weeks / 6);
     console.log(`\n✓ Seed complete!`);
     console.log(`  - ${workouts.length} workouts (${weeks} weeks, ${phases} phase${phases > 1 ? "s" : ""})`);
     console.log(`  - ${metrics.length} body weight entries`);
+    console.log(`  - User now at Phase ${newPhase}, Week ${newWeek}`);
     console.log(`\nTo delete seed data: npm run seed:delete`);
 
   } finally {

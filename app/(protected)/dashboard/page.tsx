@@ -41,14 +41,25 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await fetch("/api/workouts?limit=5&thisWeek=true");
-        if (res.ok) {
-          const data = await res.json();
+        // Fetch this week's workouts (for stats) and recent workouts separately
+        const [thisWeekRes, recentRes] = await Promise.all([
+          fetch("/api/workouts?limit=10&thisWeek=true"),
+          fetch("/api/workouts?limit=5"),
+        ]);
+
+        if (thisWeekRes.ok) {
+          const data = await thisWeekRes.json();
           if (data.success) {
-            setRecentWorkouts(data.data.workouts || []);
             setWeeklyCompletedSessions(
               (data.data.workouts || []).map((w: ClientWorkout) => w.session)
             );
+          }
+        }
+
+        if (recentRes.ok) {
+          const data = await recentRes.json();
+          if (data.success) {
+            setRecentWorkouts(data.data.workouts || []);
           }
         }
       } catch (error) {
