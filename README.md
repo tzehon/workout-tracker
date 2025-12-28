@@ -461,72 +461,27 @@ Repeat the above with project name: `workout-tracker-prod`
    - **Preview** - PR previews and staging (staging.workout.tth.dev)
    - **Development** - Only for `vercel dev` locally (skip this)
 
-   **Key concept:** To use *different values* for Production vs Preview, you must **add the same variable name twice** - once for each environment.
+   #### Adding Variables
 
-   #### Step-by-Step Example: `MONGODB_URI`
-
-   **First entry (Production):**
+   For each variable:
    1. Click "Add New" → "Environment Variable"
-   2. Key: `MONGODB_URI`
-   3. Value: `mongodb+srv://user:pass@PROD-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority`
-   4. Environments: **Uncheck all, then check only "Production"**
-   5. Click "Save"
-
-   **Second entry (Preview/Staging):**
-   1. Click "Add Another"
-   2. Key: `MONGODB_URI` (same name!)
-   3. Value: `mongodb+srv://user:pass@STAGING-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority`
-   4. Environments: **Uncheck all, then check only "Preview"**
-   5. Click "Save"
-
-   After saving, you'll see `MONGODB_URI` listed twice in the table - one tagged "Production", one tagged "Preview".
+   2. Enter the Key and Value
+   3. Environments: **Check only "Production"** (uncheck Preview and Development)
+   4. Click "Save"
 
    #### All Variables to Add
 
-   Repeat the above pattern for each variable (add twice with different values):
-
-   **`MONGODB_URI`**
-   | Environment | Value |
-   |-------------|-------|
-   | Production only | Your production Atlas connection string |
-   | Preview only | Your staging Atlas connection string |
-
-   **`GOOGLE_CLIENT_ID`**
-   | Environment | Value |
-   |-------------|-------|
-   | Production only | Client ID from `workout-tracker-prod` GCP project |
-   | Preview only | Client ID from `workout-tracker-dev-stg` GCP project |
-
-   **`GOOGLE_CLIENT_SECRET`** (enable Sensitive toggle)
-   | Environment | Value |
-   |-------------|-------|
-   | Production only | Client Secret from `workout-tracker-prod` GCP project |
-   | Preview only | Client Secret from `workout-tracker-dev-stg` GCP project |
-
-   **`NEXTAUTH_SECRET`** (enable Sensitive toggle)
-
-   Generate two different secrets: `openssl rand -base64 32`
-   | Environment | Value |
-   |-------------|-------|
-   | Production only | First generated secret |
-   | Preview only | Second generated secret |
-
-   **`NEXTAUTH_URL`**
-   | Environment | Value |
-   |-------------|-------|
-   | Production only | `https://workout.tth.dev` |
-   | Preview only | `https://staging.workout.tth.dev` |
+   | Variable | Value | Sensitive |
+   |----------|-------|-----------|
+   | `MONGODB_URI` | Your production Atlas connection string | No |
+   | `GOOGLE_CLIENT_ID` | Client ID from `workout-tracker-prod` GCP project | No |
+   | `GOOGLE_CLIENT_SECRET` | Client Secret from `workout-tracker-prod` GCP project | Yes |
+   | `NEXTAUTH_SECRET` | Random secret (`openssl rand -base64 32`) | Yes |
+   | `NEXTAUTH_URL` | `https://workout.tth.dev` | No |
 
    #### Final Result
 
-   - **With staging domain:** 10 entries (5 variables × 2 environments)
-   - **Production only (simpler):** 5 entries (Production environment only)
-
-   > **Tip:** If you're the only user and don't need a staging domain, just set Production variables. Preview deployments will use Production values, which is fine for personal testing.
-
-   > **Why separate values?** Production and staging use different databases and OAuth credentials. This prevents staging from accidentally modifying production data.
-
-   > **Note:** OAuth only works on exact domains you registered. Random Vercel preview URLs (`project-abc123.vercel.app`) won't work for OAuth - but your production domain will.
+   5 environment variables, all set to **Production** environment only.
 
 3. **Configure Custom Domains**
 
@@ -562,118 +517,61 @@ Repeat the above with project name: `workout-tracker-prod`
    7. Wait for DNS propagation (1-10 minutes), then click **"Refresh"** in Vercel
    8. Status should change to **"Valid Configuration"** (blue checkmark)
 
-   **Add Staging Domain (for Trunk-Based Development):**
-
-   For trunk-based development, staging deploys from the `main` branch:
-
-   1. Click **"Add Domain"** in Vercel
-   2. Enter: `staging.workout.tth.dev`
-   3. Choose **"Preview"** environment
-   4. In the branch dropdown, select **"main"**
-   5. Click **"Save"**
-   6. Configure DNS (same process as production domain)
-
-   Now every push to `main` auto-deploys to `staging.workout.tth.dev`.
-
    **Final Result:**
 
    Your Domains list should show:
-   | Domain | Status | Environment | Branch |
-   |--------|--------|-------------|--------|
-   | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production | - |
-   | `workout.tth.dev` | ✓ Valid | Production | - |
-   | `staging.workout.tth.dev` | ✓ Valid | Preview | main |
+   | Domain | Status | Environment |
+   |--------|--------|-------------|
+   | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production |
+   | `workout.tth.dev` | ✓ Valid | Production |
 
-### Development Workflow (Trunk-Based)
+### Development Workflow
 
-This project follows **trunk-based development** - a simple, fast workflow where `main` is always deployable.
+Simple two-environment setup: **Local** → **Production**
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                      TRUNK-BASED DEVELOPMENT                                 │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│   SHORT-LIVED BRANCHES                    MAIN (TRUNK)                      │
-│   (hours, not days)                       (always deployable)               │
-│                                                                             │
-│   ┌─────────────┐                        ┌─────────────┐                    │
-│   │ feature/xyz │ ────── merge ────────► │    main     │                    │
-│   │ fix/bug     │                        └─────────────┘                    │
-│   └─────────────┘                               │                           │
-│                                    ┌────────────┴────────────┐              │
-│                                    ▼                         ▼              │
-│                              AUTO-DEPLOY               MANUAL PROMOTE       │
-│                                    │                         │              │
-│                                    ▼                         ▼              │
-│                         staging.workout.tth.dev      workout.tth.dev        │
-│                         (every push to main)         (when ready)           │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                    DEVELOPMENT WORKFLOW                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   LOCAL                                    PRODUCTION           │
+│   (localhost:3000)                         (workout.tth.dev)    │
+│                                                                 │
+│   ┌─────────────┐                         ┌─────────────┐       │
+│   │    main     │ ────── git push ──────► │    main     │       │
+│   └─────────────┘                         └─────────────┘       │
+│         │                                       │               │
+│         ▼                                       ▼               │
+│   Local MongoDB                          Production Atlas       │
+│   Dev/Stg OAuth                          Production OAuth       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 #### Environment Summary
 
-| Environment | Trigger | URL | Database | OAuth |
-|-------------|---------|-----|----------|-------|
-| Local | `npm run dev` | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
-| Staging | Push to `main` | `staging.workout.tth.dev` | Staging Atlas | Dev/Stg GCP project |
-| Production | Manual promote | `workout.tth.dev` | Production Atlas | Prod GCP project |
+| Environment | URL | Database | OAuth |
+|-------------|-----|----------|-------|
+| Local | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
+| Production | `workout.tth.dev` | Production Atlas | Prod GCP project |
 
-#### Step-by-Step Development Flow
+#### Daily Development
 
-**1. Local Development**
 ```bash
-# Start local MongoDB
+# 1. Start local MongoDB
 atlas deployments start local
 
-# Start from main (the trunk)
-git checkout main
-git pull origin main
-
-# Create short-lived feature branch
-git checkout -b feature/my-new-feature
-
-# Develop and test locally
+# 2. Start dev server
 npm run dev
+
+# 3. Make changes and test locally
 npm test
-```
 
-**2. Merge to Main → Auto-Deploy to Staging**
-
-```bash
-# Commit your changes
+# 4. Commit and push to production
 git add .
-git commit -m "Add my new feature"
-
-# Merge back to main (keep branches short-lived!)
-git checkout main
-git pull origin main
-git merge feature/my-new-feature
-
-# Push to deploy to staging
+git commit -m "Add my feature"
 git push origin main
-# → Automatically deploys to staging.workout.tth.dev
-
-# Clean up feature branch
-git branch -d feature/my-new-feature
-```
-
-Test your changes on `staging.workout.tth.dev` with real (staging) database.
-
-**3. Promote to Production**
-
-When staging looks good, promote to production:
-
-**Option A - Vercel Dashboard (Recommended):**
-1. Go to Vercel → your project → Deployments
-2. Find the staging deployment you want to promote
-3. Click the "..." menu → "Promote to Production"
-
-**Option B - Git Tags:**
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-# Configure Vercel to deploy tags to production
+# → Automatically deploys to workout.tth.dev
 ```
 
 #### Quick Reference
@@ -681,27 +579,8 @@ git push origin v1.0.0
 | Action | Command |
 |--------|---------|
 | Start local dev | `atlas deployments start local && npm run dev` |
-| Create feature | `git checkout main && git pull && git checkout -b feature/xyz` |
 | Run tests | `npm test` |
-| Deploy to staging | `git checkout main && git merge feature/xyz && git push` |
-| Deploy to production | Vercel Dashboard → Promote deployment |
-
-#### Key Principles
-
-| Principle | Practice |
-|-----------|----------|
-| **Small changes** | Merge to main frequently (daily or more) |
-| **Always deployable** | Never break main - run tests before merging |
-| **Short-lived branches** | Hours, not days - avoid merge conflicts |
-| **No staging branch** | Main auto-deploys to staging |
-
-#### Branch Protection (Optional)
-
-For solo development, no protection needed. For teams:
-
-**For `main` branch:**
-- Require status checks (CI must pass)
-- Optionally require PR reviews
+| Deploy to production | `git add . && git commit -m "message" && git push` |
 
 ---
 
