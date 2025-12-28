@@ -36,6 +36,7 @@ export interface Workout {
   exercises: ExerciseLog[];
   notes?: string;
   duration?: number; // in minutes
+  isSeed?: boolean; // for seed data identification
   createdAt: Date;
   updatedAt: Date;
 }
@@ -130,6 +131,7 @@ export interface BodyMetrics {
   weight?: number;
   measurements?: BodyMeasurements;
   notes?: string;
+  isSeed?: boolean; // for seed data identification
   createdAt: Date;
 }
 

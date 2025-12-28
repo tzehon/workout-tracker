@@ -1,5 +1,7 @@
 # Workout Tracker
 
+[![CI](https://github.com/tzehon/workout-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/tzehon/workout-tracker/actions/workflows/ci.yml)
+
 A full-stack web application for tracking an 18-week gymnastic rings bodyweight training program. Built with Next.js, TypeScript, Tailwind CSS, MongoDB, and NextAuth.js.
 
 **Live URL:** https://workout.tth.dev
@@ -277,6 +279,34 @@ Open [http://localhost:3000](http://localhost:3000) - you should see the login p
 | `npm test` | Run tests in watch mode |
 | `npm run test:run` | Run tests once |
 | `npm run test:coverage` | Run tests with coverage |
+| `npm run seed` | Seed dev database with sample data |
+| `npm run seed:delete` | Delete seeded sample data |
+
+### Seeding Development Data
+
+To test the UI with realistic data (workouts, body metrics, charts), you can seed your local database:
+
+```bash
+# Seed 6 weeks of data (1 complete phase) - default
+SEED_USER_EMAIL=your@email.com npm run seed
+
+# Seed specific number of weeks
+SEED_USER_EMAIL=your@email.com npm run seed 4   # 4 weeks (partial phase)
+SEED_USER_EMAIL=your@email.com npm run seed 12  # 12 weeks (2 phases)
+
+# Delete all seeded data
+SEED_USER_EMAIL=your@email.com npm run seed:delete
+```
+
+**Requirements:**
+- Local MongoDB must be running (`atlas deployments start local`)
+- You must have logged in at least once to create your user account
+- `SEED_USER_EMAIL` must match the email you logged in with
+
+**What gets seeded:**
+- Workouts: 4 per week (Push 1, Pull 1, Push 2, Pull 2)
+- Body metrics: 2 weigh-ins per week
+- Realistic progression: reps increase through weeks, deload week has reduced volume
 
 ---
 
