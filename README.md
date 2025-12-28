@@ -519,11 +519,14 @@ Repeat the above with project name: `workout-tracker-prod`
 
    #### Final Result
 
-   After setup, your Environment Variables list should show **10 entries** (5 variables × 2 environments each). Each variable appears twice - once tagged "Production", once tagged "Preview".
+   - **With staging domain:** 10 entries (5 variables × 2 environments)
+   - **Production only (simpler):** 5 entries (Production environment only)
+
+   > **Tip:** If you're the only user and don't need a staging domain, just set Production variables. Preview deployments will use Production values, which is fine for personal testing.
 
    > **Why separate values?** Production and staging use different databases and OAuth credentials. This prevents staging from accidentally modifying production data.
 
-   > **Note:** OAuth only works on exact domains you registered. Random Vercel preview URLs (`project-abc123.vercel.app`) won't work - use `staging.workout.tth.dev` instead.
+   > **Note:** OAuth only works on exact domains you registered. Random Vercel preview URLs (`project-abc123.vercel.app`) won't work for OAuth - but your production domain will.
 
 3. **Configure Custom Domains**
 
@@ -559,24 +562,29 @@ Repeat the above with project name: `workout-tracker-prod`
    7. Wait for DNS propagation (1-10 minutes), then click **"Refresh"** in Vercel
    8. Status should change to **"Valid Configuration"** (blue checkmark)
 
-   **Add Staging Domain:**
+   **Add Staging Domain (Optional):**
 
-   Repeat the same steps:
-   1. Click **"Add Domain"**
-   2. Enter: `staging.workout.tth.dev`
-   3. Choose **"Preview"** environment
-   4. Click **"Save"**
-   5. Expand "Learn more" → copy DNS values → add to your DNS provider
-   6. Click **"Refresh"** once DNS propagates
+   A staging domain requires a dedicated branch. If you just want to test PRs, skip this - use Vercel's auto-generated preview URLs instead.
+
+   To set up a staging domain:
+   1. Create a `staging` branch in your repo: `git checkout -b staging && git push -u origin staging`
+   2. Click **"Add Domain"** in Vercel
+   3. Enter: `staging.workout.tth.dev`
+   4. Choose **"Preview"** environment
+   5. In the branch dropdown, select **"staging"** (required for Preview domains)
+   6. Click **"Save"**
+   7. Configure DNS (same process as production domain)
+
+   Now `staging.workout.tth.dev` always shows the latest deployment from your `staging` branch.
 
    **Final Result:**
 
-   Your Domains list should show all domains with "Valid Configuration":
+   Your Domains list should show:
    | Domain | Status | Environment |
    |--------|--------|-------------|
    | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production |
    | `workout.tth.dev` | ✓ Valid | Production |
-   | `staging.workout.tth.dev` | ✓ Valid | Preview |
+   | `staging.workout.tth.dev` (if added) | ✓ Valid | Preview (staging branch) |
 
 ### Deployment Flow
 
