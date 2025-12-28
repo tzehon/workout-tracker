@@ -562,61 +562,62 @@ Repeat the above with project name: `workout-tracker-prod`
    7. Wait for DNS propagation (1-10 minutes), then click **"Refresh"** in Vercel
    8. Status should change to **"Valid Configuration"** (blue checkmark)
 
-   **Add Staging Domain (Optional):**
+   **Add Staging Domain (for Trunk-Based Development):**
 
-   A staging domain requires a dedicated branch. If you just want to test PRs, skip this - use Vercel's auto-generated preview URLs instead.
+   For trunk-based development, staging deploys from the `main` branch:
 
-   To set up a staging domain:
-   1. Create a `staging` branch in your repo: `git checkout -b staging && git push -u origin staging`
-   2. Click **"Add Domain"** in Vercel
-   3. Enter: `staging.workout.tth.dev`
-   4. Choose **"Preview"** environment
-   5. In the branch dropdown, select **"staging"** (required for Preview domains)
-   6. Click **"Save"**
-   7. Configure DNS (same process as production domain)
+   1. Click **"Add Domain"** in Vercel
+   2. Enter: `staging.workout.tth.dev`
+   3. Choose **"Preview"** environment
+   4. In the branch dropdown, select **"main"**
+   5. Click **"Save"**
+   6. Configure DNS (same process as production domain)
 
-   Now `staging.workout.tth.dev` always shows the latest deployment from your `staging` branch.
+   Now every push to `main` auto-deploys to `staging.workout.tth.dev`.
 
    **Final Result:**
 
    Your Domains list should show:
-   | Domain | Status | Environment |
-   |--------|--------|-------------|
-   | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production |
-   | `workout.tth.dev` | ✓ Valid | Production |
-   | `staging.workout.tth.dev` (if added) | ✓ Valid | Preview (staging branch) |
+   | Domain | Status | Environment | Branch |
+   |--------|--------|-------------|--------|
+   | `workout-tracker-xyz.vercel.app` | ✓ Valid | Production | - |
+   | `workout.tth.dev` | ✓ Valid | Production | - |
+   | `staging.workout.tth.dev` | ✓ Valid | Preview | main |
 
-### Development Workflow
+### Development Workflow (Trunk-Based)
 
-This project follows a **branch-based workflow** with three environments:
+This project follows **trunk-based development** - a simple, fast workflow where `main` is always deployable.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           DEVELOPMENT WORKFLOW                               │
+│                      TRUNK-BASED DEVELOPMENT                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│   LOCAL                    STAGING                    PRODUCTION            │
-│   (localhost:3000)         (staging.workout.tth.dev)  (workout.tth.dev)     │
+│   SHORT-LIVED BRANCHES                    MAIN (TRUNK)                      │
+│   (hours, not days)                       (always deployable)               │
 │                                                                             │
-│   ┌─────────────┐         ┌─────────────┐           ┌─────────────┐        │
-│   │ feature/*   │ ──PR──► │  staging    │ ──PR───► │    main     │        │
-│   │ fix/*       │         │  branch     │           │   branch    │        │
-│   └─────────────┘         └─────────────┘           └─────────────┘        │
-│         │                       │                         │                 │
-│         ▼                       ▼                         ▼                 │
-│   Local MongoDB           Staging Atlas DB          Production Atlas DB    │
-│   Dev OAuth               Dev/Stg OAuth             Production OAuth       │
+│   ┌─────────────┐                        ┌─────────────┐                    │
+│   │ feature/xyz │ ────── merge ────────► │    main     │                    │
+│   │ fix/bug     │                        └─────────────┘                    │
+│   └─────────────┘                               │                           │
+│                                    ┌────────────┴────────────┐              │
+│                                    ▼                         ▼              │
+│                              AUTO-DEPLOY               MANUAL PROMOTE       │
+│                                    │                         │              │
+│                                    ▼                         ▼              │
+│                         staging.workout.tth.dev      workout.tth.dev        │
+│                         (every push to main)         (when ready)           │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 #### Environment Summary
 
-| Environment | Branch | URL | Database | OAuth |
-|-------------|--------|-----|----------|-------|
-| Local | any | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
-| Staging | `staging` | `staging.workout.tth.dev` | Staging Atlas | Dev/Stg GCP project |
-| Production | `main` | `workout.tth.dev` | Production Atlas | Prod GCP project |
+| Environment | Trigger | URL | Database | OAuth |
+|-------------|---------|-----|----------|-------|
+| Local | `npm run dev` | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
+| Staging | Push to `main` | `staging.workout.tth.dev` | Staging Atlas | Dev/Stg GCP project |
+| Production | Manual promote | `workout.tth.dev` | Production Atlas | Prod GCP project |
 
 #### Step-by-Step Development Flow
 
@@ -625,68 +626,82 @@ This project follows a **branch-based workflow** with three environments:
 # Start local MongoDB
 atlas deployments start local
 
-# Create feature branch
+# Start from main (the trunk)
+git checkout main
+git pull origin main
+
+# Create short-lived feature branch
 git checkout -b feature/my-new-feature
 
 # Develop and test locally
 npm run dev
 npm test
-
-# Commit changes
-git add .
-git commit -m "Add my new feature"
 ```
 
-**2. Deploy to Staging**
-
-Push directly to `staging` branch to deploy to `staging.workout.tth.dev`:
+**2. Merge to Main → Auto-Deploy to Staging**
 
 ```bash
-# Switch to staging and merge your feature
-git checkout staging
-git pull origin staging
+# Commit your changes
+git add .
+git commit -m "Add my new feature"
+
+# Merge back to main (keep branches short-lived!)
+git checkout main
+git pull origin main
 git merge feature/my-new-feature
 
-# Push to deploy
-git push origin staging
+# Push to deploy to staging
+git push origin main
 # → Automatically deploys to staging.workout.tth.dev
+
+# Clean up feature branch
+git branch -d feature/my-new-feature
 ```
 
-Test your changes on staging with real (staging) database.
+Test your changes on `staging.workout.tth.dev` with real (staging) database.
 
 **3. Promote to Production**
 
-When staging looks good, create a PR to production:
+When staging looks good, promote to production:
 
+**Option A - Vercel Dashboard (Recommended):**
+1. Go to Vercel → your project → Deployments
+2. Find the staging deployment you want to promote
+3. Click the "..." menu → "Promote to Production"
+
+**Option B - Git Tags:**
 ```bash
-# On GitHub: Create PR from staging → main
+git tag v1.0.0
+git push origin v1.0.0
+# Configure Vercel to deploy tags to production
 ```
-
-- CI runs tests on the PR
-- After review, merge to `main`
-- Vercel automatically deploys to `workout.tth.dev`
 
 #### Quick Reference
 
 | Action | Command |
 |--------|---------|
 | Start local dev | `atlas deployments start local && npm run dev` |
-| Create feature | `git checkout -b feature/xyz` |
+| Create feature | `git checkout main && git pull && git checkout -b feature/xyz` |
 | Run tests | `npm test` |
-| Deploy to staging | `git checkout staging && git merge feature/xyz && git push` |
-| Deploy to production | Create PR: `staging` → `main` on GitHub, then merge |
+| Deploy to staging | `git checkout main && git merge feature/xyz && git push` |
+| Deploy to production | Vercel Dashboard → Promote deployment |
 
-#### Branch Protection (Recommended)
+#### Key Principles
 
-Configure on GitHub → Settings → Branches → Add rule:
+| Principle | Practice |
+|-----------|----------|
+| **Small changes** | Merge to main frequently (daily or more) |
+| **Always deployable** | Never break main - run tests before merging |
+| **Short-lived branches** | Hours, not days - avoid merge conflicts |
+| **No staging branch** | Main auto-deploys to staging |
+
+#### Branch Protection (Optional)
+
+For solo development, no protection needed. For teams:
 
 **For `main` branch:**
-- Require PR before merging
 - Require status checks (CI must pass)
-
-**For `staging` branch (optional):**
-- No protection needed if you're the only developer
-- Add protection if working with a team
+- Optionally require PR reviews
 
 ---
 
