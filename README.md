@@ -527,27 +527,42 @@ Repeat the above with project name: `workout-tracker-prod`
 
 3. **Configure Custom Domains**
 
-   **Production domain:**
-   - Go to Project Settings → Domains
-   - Add `workout.tth.dev`
-   - Add DNS record at your registrar:
-     - Type: `CNAME`
-     - Name: `workout`
-     - Value: `cname.vercel-dns.com`
+   Go to Project Settings → **Domains** in the left sidebar.
 
-   **Staging domain:**
-   - Add `staging.workout.tth.dev` to the same project
-   - Assign it to a specific branch (e.g., `develop`) or use as preview domain
-   - Add DNS record:
-     - Type: `CNAME`
-     - Name: `staging.workout`
-     - Value: `cname.vercel-dns.com`
+   You'll see a default Vercel domain (e.g., `workout-tracker-xyz.vercel.app`) already assigned to Production.
 
-4. **Configure Staging Environment Variables**
+   **Add Production Domain:**
+   1. Click **"Add Domain"** button (top right)
+   2. In the modal:
+      - Enter your domain: `workout.tth.dev`
+      - Select **"Connect to an environment"**
+      - Choose **"Production"** from the dropdown
+   3. Click **"Save"**
+   4. Vercel will show DNS configuration instructions. Add at your registrar:
+      - Type: `CNAME`
+      - Name: `workout` (or `@` for root domain)
+      - Value: `cname.vercel-dns.com`
+   5. Wait for DNS propagation (usually 1-10 minutes), then click **"Refresh"**
 
-   In Vercel, you can set environment variables per domain. For `staging.workout.tth.dev`:
-   - Set `MONGODB_URI` to your staging Atlas URI
-   - Set `NEXTAUTH_URL` to `https://staging.workout.tth.dev`
+   **Add Staging Domain:**
+   1. Click **"Add Domain"** again
+   2. In the modal:
+      - Enter: `staging.workout.tth.dev`
+      - Select **"Connect to an environment"**
+      - Choose **"Preview"** from the dropdown
+   3. Click **"Save"**
+   4. Add DNS record:
+      - Type: `CNAME`
+      - Name: `staging.workout`
+      - Value: `cname.vercel-dns.com`
+
+   **Final Result:**
+   Your Domains list should show:
+   | Domain | Environment |
+   |--------|-------------|
+   | `workout-tracker-xyz.vercel.app` | Production |
+   | `workout.tth.dev` | Production |
+   | `staging.workout.tth.dev` | Preview |
 
 ### Deployment Flow
 
