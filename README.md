@@ -586,14 +586,115 @@ Repeat the above with project name: `workout-tracker-prod`
    | `workout.tth.dev` | ✓ Valid | Production |
    | `staging.workout.tth.dev` (if added) | ✓ Valid | Preview (staging branch) |
 
-### Deployment Flow
+### Development Workflow
 
-**Automatic deployments:**
-- Push to any branch → Creates preview deployment
-- Merge/push to `main` → Deploys to production
+This project follows a **branch-based workflow** with three environments:
 
-**Manual promotion:**
-- In Vercel dashboard, you can promote any preview to production
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           DEVELOPMENT WORKFLOW                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   LOCAL                    STAGING                    PRODUCTION            │
+│   (localhost:3000)         (staging.workout.tth.dev)  (workout.tth.dev)     │
+│                                                                             │
+│   ┌─────────────┐         ┌─────────────┐           ┌─────────────┐        │
+│   │ feature/*   │ ──PR──► │  staging    │ ──PR───► │    main     │        │
+│   │ fix/*       │         │  branch     │           │   branch    │        │
+│   └─────────────┘         └─────────────┘           └─────────────┘        │
+│         │                       │                         │                 │
+│         ▼                       ▼                         ▼                 │
+│   Local MongoDB           Staging Atlas DB          Production Atlas DB    │
+│   Dev OAuth               Dev/Stg OAuth             Production OAuth       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Environment Summary
+
+| Environment | Branch | URL | Database | OAuth |
+|-------------|--------|-----|----------|-------|
+| Local | any | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
+| Staging | `staging` | `staging.workout.tth.dev` | Staging Atlas | Dev/Stg GCP project |
+| Production | `main` | `workout.tth.dev` | Production Atlas | Prod GCP project |
+
+#### Step-by-Step Development Flow
+
+**1. Local Development**
+```bash
+# Start local MongoDB
+atlas deployments start local
+
+# Create feature branch from staging (not main)
+git checkout staging
+git pull origin staging
+git checkout -b feature/my-new-feature
+
+# Develop and test locally
+npm run dev
+npm test
+
+# Commit changes
+git add .
+git commit -m "Add my new feature"
+```
+
+**2. Create Pull Request → Staging**
+```bash
+# Push feature branch
+git push -u origin feature/my-new-feature
+
+# Create PR: feature/my-new-feature → staging
+# (Do this on GitHub)
+```
+
+When you create a PR:
+- Vercel creates a **preview deployment** with a unique URL
+- GitHub Actions runs lint, typecheck, and tests
+- Review the preview URL to verify changes work
+
+**3. Merge to Staging**
+
+After PR approval:
+- Merge PR into `staging` branch
+- Vercel automatically deploys to `staging.workout.tth.dev`
+- Test on staging with real (staging) database
+- This is your "QA" environment
+
+**4. Promote to Production**
+```bash
+# Create PR: staging → main
+# (Do this on GitHub)
+```
+
+After final review:
+- Merge `staging` into `main`
+- Vercel automatically deploys to `workout.tth.dev`
+- Production is updated
+
+#### Quick Reference
+
+| Action | Command / Step |
+|--------|---------------|
+| Start local dev | `atlas deployments start local && npm run dev` |
+| Create feature | `git checkout staging && git checkout -b feature/xyz` |
+| Run tests | `npm test` |
+| Push for PR | `git push -u origin feature/xyz` |
+| Deploy to staging | Merge PR to `staging` branch |
+| Deploy to production | Merge PR from `staging` to `main` |
+
+#### Branch Protection (Recommended)
+
+Configure on GitHub → Settings → Branches → Add rule:
+
+**For `main` branch:**
+- Require PR before merging
+- Require status checks (CI must pass)
+- Require branch to be up to date
+
+**For `staging` branch:**
+- Require PR before merging
+- Require status checks (CI must pass)
 
 ---
 
