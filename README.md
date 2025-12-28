@@ -625,9 +625,7 @@ This project follows a **branch-based workflow** with three environments:
 # Start local MongoDB
 atlas deployments start local
 
-# Create feature branch from staging (not main)
-git checkout staging
-git pull origin staging
+# Create feature branch
 git checkout -b feature/my-new-feature
 
 # Develop and test locally
@@ -639,49 +637,44 @@ git add .
 git commit -m "Add my new feature"
 ```
 
-**2. Create Pull Request → Staging**
-```bash
-# Push feature branch
-git push -u origin feature/my-new-feature
+**2. Deploy to Staging**
 
-# Create PR: feature/my-new-feature → staging
-# (Do this on GitHub)
+Push directly to `staging` branch to deploy to `staging.workout.tth.dev`:
+
+```bash
+# Switch to staging and merge your feature
+git checkout staging
+git pull origin staging
+git merge feature/my-new-feature
+
+# Push to deploy
+git push origin staging
+# → Automatically deploys to staging.workout.tth.dev
 ```
 
-When you create a PR:
-- Vercel creates a **preview deployment** with a unique URL
-- GitHub Actions runs lint, typecheck, and tests
-- Review the preview URL to verify changes work
+Test your changes on staging with real (staging) database.
 
-**3. Merge to Staging**
+**3. Promote to Production**
 
-After PR approval:
-- Merge PR into `staging` branch
-- Vercel automatically deploys to `staging.workout.tth.dev`
-- Test on staging with real (staging) database
-- This is your "QA" environment
+When staging looks good, create a PR to production:
 
-**4. Promote to Production**
 ```bash
-# Create PR: staging → main
-# (Do this on GitHub)
+# On GitHub: Create PR from staging → main
 ```
 
-After final review:
-- Merge `staging` into `main`
+- CI runs tests on the PR
+- After review, merge to `main`
 - Vercel automatically deploys to `workout.tth.dev`
-- Production is updated
 
 #### Quick Reference
 
-| Action | Command / Step |
-|--------|---------------|
+| Action | Command |
+|--------|---------|
 | Start local dev | `atlas deployments start local && npm run dev` |
-| Create feature | `git checkout staging && git checkout -b feature/xyz` |
+| Create feature | `git checkout -b feature/xyz` |
 | Run tests | `npm test` |
-| Push for PR | `git push -u origin feature/xyz` |
-| Deploy to staging | Merge PR to `staging` branch |
-| Deploy to production | Merge PR from `staging` to `main` |
+| Deploy to staging | `git checkout staging && git merge feature/xyz && git push` |
+| Deploy to production | Create PR: `staging` → `main` on GitHub, then merge |
 
 #### Branch Protection (Recommended)
 
@@ -690,11 +683,10 @@ Configure on GitHub → Settings → Branches → Add rule:
 **For `main` branch:**
 - Require PR before merging
 - Require status checks (CI must pass)
-- Require branch to be up to date
 
-**For `staging` branch:**
-- Require PR before merging
-- Require status checks (CI must pass)
+**For `staging` branch (optional):**
+- No protection needed if you're the only developer
+- Add protection if working with a team
 
 ---
 
