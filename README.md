@@ -452,17 +452,69 @@ Repeat the above with project name: `workout-tracker-prod`
 
 2. **Configure Environment Variables**
 
-   Go to Project Settings → Environment Variables and add:
+   Go to Project Settings → Environment Variables. For each variable, you'll see environment checkboxes:
+   - **Production** - Used for your main domain (workout.tth.dev)
+   - **Preview** - Used for PR previews and staging (staging.workout.tth.dev)
+   - **Development** - Used when running `vercel dev` locally (rarely needed)
 
-   | Variable | Preview/Staging | Production |
-   |----------|-----------------|------------|
-   | `MONGODB_URI` | Staging Atlas URI | Production Atlas URI |
-   | `GOOGLE_CLIENT_ID` | Dev/Stg OAuth ID | Prod OAuth ID |
-   | `GOOGLE_CLIENT_SECRET` | Dev/Stg OAuth Secret | Prod OAuth Secret |
-   | `NEXTAUTH_SECRET` | Random secret | Different random secret |
-   | `NEXTAUTH_URL` | `https://staging.workout.tth.dev` | `https://workout.tth.dev` |
+   #### Step-by-Step Variable Setup
 
-   > **Important:** Set different values for Preview vs Production environments in Vercel. OAuth will only work on `staging.workout.tth.dev` (not random preview URLs) because Google requires exact redirect URIs.
+   **Variable 1: `MONGODB_URI`**
+
+   You need TWO entries for this variable (different values for each environment):
+
+   | Entry | Value | Environments |
+   |-------|-------|--------------|
+   | 1 | `mongodb+srv://user:pass@prod-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority` | ☑ Production only |
+   | 2 | `mongodb+srv://user:pass@staging-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority` | ☑ Preview only |
+
+   **Variable 2: `GOOGLE_CLIENT_ID`**
+
+   | Entry | Value | Environments |
+   |-------|-------|--------------|
+   | 1 | Your production OAuth Client ID | ☑ Production only |
+   | 2 | Your dev/staging OAuth Client ID | ☑ Preview only |
+
+   **Variable 3: `GOOGLE_CLIENT_SECRET`**
+
+   | Entry | Value | Environments |
+   |-------|-------|--------------|
+   | 1 | Your production OAuth Client Secret | ☑ Production only |
+   | 2 | Your dev/staging OAuth Client Secret | ☑ Preview only |
+
+   > Enable **Sensitive** toggle for secrets so they can't be read after creation.
+
+   **Variable 4: `NEXTAUTH_SECRET`**
+
+   Generate two different secrets (`openssl rand -base64 32`):
+
+   | Entry | Value | Environments |
+   |-------|-------|--------------|
+   | 1 | `<random-secret-1>` | ☑ Production only |
+   | 2 | `<random-secret-2>` | ☑ Preview only |
+
+   **Variable 5: `NEXTAUTH_URL`**
+
+   | Entry | Value | Environments |
+   |-------|-------|--------------|
+   | 1 | `https://workout.tth.dev` | ☑ Production only |
+   | 2 | `https://staging.workout.tth.dev` | ☑ Preview only |
+
+   #### Summary Table
+
+   After setup, you should have these entries:
+
+   | Variable | Production Value | Preview Value |
+   |----------|-----------------|---------------|
+   | `MONGODB_URI` | prod Atlas URI | staging Atlas URI |
+   | `GOOGLE_CLIENT_ID` | prod OAuth ID | dev/stg OAuth ID |
+   | `GOOGLE_CLIENT_SECRET` | prod OAuth secret | dev/stg OAuth secret |
+   | `NEXTAUTH_SECRET` | unique secret #1 | unique secret #2 |
+   | `NEXTAUTH_URL` | `https://workout.tth.dev` | `https://staging.workout.tth.dev` |
+
+   > **Why separate values?** Production and staging use different databases and OAuth credentials. This prevents staging from accidentally modifying production data, and keeps credentials isolated.
+
+   > **Note:** OAuth will only work on `staging.workout.tth.dev` (not random Vercel preview URLs like `project-abc123.vercel.app`) because Google requires exact redirect URIs.
 
 3. **Configure Custom Domains**
 
