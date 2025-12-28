@@ -129,7 +129,7 @@ When a user clicks "Sign in with Google", here's what happens:
 
 #### Why Separate Projects for Dev vs Production?
 
-We create **two GCP projects**: one for dev/staging, one for production.
+We create **two GCP projects**: one for local development, one for production.
 
 - **Security isolation** - If dev credentials leak, production is unaffected
 - **Different configurations** - Dev stays in "Testing" mode (easy), production can be published (if needed)
@@ -137,7 +137,7 @@ We create **two GCP projects**: one for dev/staging, one for production.
 
 ---
 
-#### Create Development/Staging OAuth Credentials
+#### Create Development OAuth Credentials
 
 1. **Go to [Google Cloud Console](https://console.cloud.google.com/)**
 
@@ -155,7 +155,7 @@ We create **two GCP projects**: one for dev/staging, one for production.
 4. **Configure Branding**
    - Go to "Branding" in the left sidebar
    - Fill in:
-     - App name: `Workout Tracker (Dev/Staging)`
+     - App name: `Workout Tracker (Dev)`
      - User support email: Your email
      - Developer contact email: Your email
    - Save
@@ -179,19 +179,17 @@ We create **two GCP projects**: one for dev/staging, one for production.
    - Go to "Clients" in the left sidebar
    - Click "+ Create Client"
    - Application type: "Web application"
-   - Name: `Workout Tracker Dev/Staging`
+   - Name: `Workout Tracker Dev`
 
    **Authorized JavaScript origins:**
    ```
    http://localhost:3000
-   https://staging.workout.tth.dev
    ```
    *Why: Tells Google which domains can initiate OAuth requests. Prevents other websites from using your credentials.*
 
    **Authorized redirect URIs:**
    ```
    http://localhost:3000/api/auth/callback/google
-   https://staging.workout.tth.dev/api/auth/callback/google
    ```
    *Why: After authentication, Google redirects users back to your app at this URL. Google ONLY redirects to URLs in this list - this prevents attackers from stealing auth codes by redirecting to malicious sites. Must be exact matches (no wildcards).*
 
@@ -201,8 +199,6 @@ We create **two GCP projects**: one for dev/staging, one for production.
 
    - **Client ID** - Public identifier for your app. Safe to expose in frontend code.
    - **Client Secret** - Private key proving your server's identity. **NEVER expose this.** Store only in environment variables, never commit to git.
-
-> **Note:** Google OAuth doesn't allow wildcard redirect URIs, so we use a dedicated staging subdomain (`staging.workout.tth.dev`) instead of Vercel's random preview URLs.
 
 ---
 
@@ -269,37 +265,6 @@ Open [http://localhost:3000](http://localhost:3000) - you should see the login p
 ---
 
 ## Development Workflow
-
-### Branching Strategy
-
-```
-main (production)
-  └── feature/your-feature-name
-  └── fix/bug-description
-```
-
-### Daily Development
-
-```bash
-# 1. Start local MongoDB
-atlas deployments start local
-
-# 2. Create a feature branch
-git checkout -b feature/your-feature-name
-
-# 3. Start dev server
-npm run dev
-
-# 4. Run tests as you develop
-npm test
-
-# 5. Commit your changes
-git add .
-git commit -m "Add your feature"
-
-# 6. Push and create PR
-git push -u origin feature/your-feature-name
-```
 
 ### Available Scripts
 
@@ -380,69 +345,41 @@ We use **GitHub Actions** for continuous integration and **Vercel** for deployme
 ### Pipeline Overview
 
 ```
-Push to branch → GitHub Actions → Vercel Preview
-                      ↓
-               Lint + Type Check
-                      ↓
-                 Run Tests
-                      ↓
-               Build Verification
-
-Merge to main → GitHub Actions → Vercel Production
-                      ↓
-                 Same checks
-                      ↓
-              Deploy to workout.tth.dev
+Push to main → GitHub Actions → Vercel Production
+                    ↓
+             Lint + Type Check
+                    ↓
+               Run Tests
+                    ↓
+            Build Verification
+                    ↓
+         Deploy to workout.tth.dev
 ```
 
-### What Happens on PR
+### What Happens on Push
 
 1. **Lint** - ESLint checks code quality
 2. **Type Check** - TypeScript validates types
 3. **Test** - Vitest runs all tests
 4. **Build** - Verifies production build succeeds
-5. **Preview Deploy** - Vercel creates a unique preview URL
-
-### Branch Protection
-
-The `main` branch requires:
-- All CI checks to pass
-- At least one approval (if working in a team)
+5. **Deploy** - Vercel deploys to production
 
 ---
 
 ## Deployment
 
-### Environment Overview
-
-| Environment | URL | Database | OAuth (GCP Project) |
-|-------------|-----|----------|---------------------|
-| Local | localhost:3000 | Atlas CLI local | `workout-tracker-dev-stg` |
-| Staging | staging.workout.tth.dev | Atlas staging project | `workout-tracker-dev-stg` |
-| Production | workout.tth.dev | Atlas prod project | `workout-tracker-prod` |
-
-### Setting Up MongoDB Atlas (Staging & Production)
-
-You'll need **two separate Atlas projects** for staging and production.
-
-#### Create Staging Atlas Project
+### Setting Up MongoDB Atlas (Production)
 
 1. Go to [MongoDB Atlas](https://cloud.mongodb.com/)
-2. Create organization (if needed) → Create project: `workout-tracker-staging`
+2. Create organization (if needed) → Create project: `workout-tracker-prod`
 3. Create a cluster:
-   - Choose FREE M0 tier
+   - Choose FREE M0 tier (or M2+ for better performance/backups)
    - Select region close to Vercel (e.g., `aws-us-east-1` or `aws-ap-southeast-1`)
 4. Set up Database Access:
    - Create user with read/write permissions
 5. Set up Network Access:
    - Add `0.0.0.0/0` (allow from anywhere - required for Vercel)
 6. Get connection string from "Connect" → "Drivers"
-
-#### Create Production Atlas Project
-
-Repeat the above with project name: `workout-tracker-prod`
-
-> **Tip:** Consider using a paid tier (M2+) for production for better performance and backups.
 
 ### Setting Up Vercel
 
@@ -453,15 +390,6 @@ Repeat the above with project name: `workout-tracker-prod`
 2. **Configure Environment Variables**
 
    Go to Project Settings → Environment Variables.
-
-   #### How Vercel Environment Variables Work
-
-   When adding a variable, you select which environments it applies to:
-   - **Production** - Your main domain (workout.tth.dev)
-   - **Preview** - PR previews and staging (staging.workout.tth.dev)
-   - **Development** - Only for `vercel dev` locally (skip this)
-
-   #### Adding Variables
 
    For each variable:
    1. Click "Add New" → "Environment Variable"
@@ -543,7 +471,7 @@ Simple two-environment setup: **Local** → **Production**
 │         │                                       │               │
 │         ▼                                       ▼               │
 │   Local MongoDB                          Production Atlas       │
-│   Dev/Stg OAuth                          Production OAuth       │
+│   Dev OAuth                              Production OAuth       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -552,7 +480,7 @@ Simple two-environment setup: **Local** → **Production**
 
 | Environment | URL | Database | OAuth |
 |-------------|-----|----------|-------|
-| Local | `localhost:3000` | Atlas CLI (local) | Dev/Stg GCP project |
+| Local | `localhost:3000` | Atlas CLI (local) | Dev GCP project |
 | Production | `workout.tth.dev` | Production Atlas | Prod GCP project |
 
 #### Daily Development
@@ -672,19 +600,18 @@ npm run lint
 ```
 
 **Environment variable issues:**
-- Ensure all required vars are set in Vercel for each environment
-- `NEXTAUTH_URL` should be empty for Preview, set for Production
+- Ensure all required vars are set in Vercel for Production environment
+- Check that `NEXTAUTH_URL` matches your production domain
 
 ---
 
 ## Contributing
 
 1. **Fork the repository** (if external contributor)
-2. **Create a feature branch:** `git checkout -b feature/your-feature`
-3. **Make your changes** following the existing code style
-4. **Write/update tests** for your changes
-5. **Run tests locally:** `npm test`
-6. **Push and create a PR**
+2. **Make your changes** following the existing code style
+3. **Write/update tests** for your changes
+4. **Run tests locally:** `npm test`
+5. **Push to main** (auto-deploys to production)
 
 ### Code Style
 
