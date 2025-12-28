@@ -452,69 +452,78 @@ Repeat the above with project name: `workout-tracker-prod`
 
 2. **Configure Environment Variables**
 
-   Go to Project Settings → Environment Variables. For each variable, you'll see environment checkboxes:
-   - **Production** - Used for your main domain (workout.tth.dev)
-   - **Preview** - Used for PR previews and staging (staging.workout.tth.dev)
-   - **Development** - Used when running `vercel dev` locally (rarely needed)
+   Go to Project Settings → Environment Variables.
 
-   #### Step-by-Step Variable Setup
+   #### How Vercel Environment Variables Work
 
-   **Variable 1: `MONGODB_URI`**
+   When adding a variable, you select which environments it applies to:
+   - **Production** - Your main domain (workout.tth.dev)
+   - **Preview** - PR previews and staging (staging.workout.tth.dev)
+   - **Development** - Only for `vercel dev` locally (skip this)
 
-   You need TWO entries for this variable (different values for each environment):
+   **Key concept:** To use *different values* for Production vs Preview, you must **add the same variable name twice** - once for each environment.
 
-   | Entry | Value | Environments |
-   |-------|-------|--------------|
-   | 1 | `mongodb+srv://user:pass@prod-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority` | ☑ Production only |
-   | 2 | `mongodb+srv://user:pass@staging-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority` | ☑ Preview only |
+   #### Step-by-Step Example: `MONGODB_URI`
 
-   **Variable 2: `GOOGLE_CLIENT_ID`**
+   **First entry (Production):**
+   1. Click "Add New" → "Environment Variable"
+   2. Key: `MONGODB_URI`
+   3. Value: `mongodb+srv://user:pass@PROD-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority`
+   4. Environments: **Uncheck all, then check only "Production"**
+   5. Click "Save"
 
-   | Entry | Value | Environments |
-   |-------|-------|--------------|
-   | 1 | Your production OAuth Client ID | ☑ Production only |
-   | 2 | Your dev/staging OAuth Client ID | ☑ Preview only |
+   **Second entry (Preview/Staging):**
+   1. Click "Add Another"
+   2. Key: `MONGODB_URI` (same name!)
+   3. Value: `mongodb+srv://user:pass@STAGING-cluster.mongodb.net/workout-tracker?retryWrites=true&w=majority`
+   4. Environments: **Uncheck all, then check only "Preview"**
+   5. Click "Save"
 
-   **Variable 3: `GOOGLE_CLIENT_SECRET`**
+   After saving, you'll see `MONGODB_URI` listed twice in the table - one tagged "Production", one tagged "Preview".
 
-   | Entry | Value | Environments |
-   |-------|-------|--------------|
-   | 1 | Your production OAuth Client Secret | ☑ Production only |
-   | 2 | Your dev/staging OAuth Client Secret | ☑ Preview only |
+   #### All Variables to Add
 
-   > Enable **Sensitive** toggle for secrets so they can't be read after creation.
+   Repeat the above pattern for each variable (add twice with different values):
 
-   **Variable 4: `NEXTAUTH_SECRET`**
+   **`MONGODB_URI`**
+   | Environment | Value |
+   |-------------|-------|
+   | Production only | Your production Atlas connection string |
+   | Preview only | Your staging Atlas connection string |
 
-   Generate two different secrets (`openssl rand -base64 32`):
+   **`GOOGLE_CLIENT_ID`**
+   | Environment | Value |
+   |-------------|-------|
+   | Production only | Client ID from `workout-tracker-prod` GCP project |
+   | Preview only | Client ID from `workout-tracker-dev-stg` GCP project |
 
-   | Entry | Value | Environments |
-   |-------|-------|--------------|
-   | 1 | `<random-secret-1>` | ☑ Production only |
-   | 2 | `<random-secret-2>` | ☑ Preview only |
+   **`GOOGLE_CLIENT_SECRET`** (enable Sensitive toggle)
+   | Environment | Value |
+   |-------------|-------|
+   | Production only | Client Secret from `workout-tracker-prod` GCP project |
+   | Preview only | Client Secret from `workout-tracker-dev-stg` GCP project |
 
-   **Variable 5: `NEXTAUTH_URL`**
+   **`NEXTAUTH_SECRET`** (enable Sensitive toggle)
 
-   | Entry | Value | Environments |
-   |-------|-------|--------------|
-   | 1 | `https://workout.tth.dev` | ☑ Production only |
-   | 2 | `https://staging.workout.tth.dev` | ☑ Preview only |
+   Generate two different secrets: `openssl rand -base64 32`
+   | Environment | Value |
+   |-------------|-------|
+   | Production only | First generated secret |
+   | Preview only | Second generated secret |
 
-   #### Summary Table
+   **`NEXTAUTH_URL`**
+   | Environment | Value |
+   |-------------|-------|
+   | Production only | `https://workout.tth.dev` |
+   | Preview only | `https://staging.workout.tth.dev` |
 
-   After setup, you should have these entries:
+   #### Final Result
 
-   | Variable | Production Value | Preview Value |
-   |----------|-----------------|---------------|
-   | `MONGODB_URI` | prod Atlas URI | staging Atlas URI |
-   | `GOOGLE_CLIENT_ID` | prod OAuth ID | dev/stg OAuth ID |
-   | `GOOGLE_CLIENT_SECRET` | prod OAuth secret | dev/stg OAuth secret |
-   | `NEXTAUTH_SECRET` | unique secret #1 | unique secret #2 |
-   | `NEXTAUTH_URL` | `https://workout.tth.dev` | `https://staging.workout.tth.dev` |
+   After setup, your Environment Variables list should show **10 entries** (5 variables × 2 environments each). Each variable appears twice - once tagged "Production", once tagged "Preview".
 
-   > **Why separate values?** Production and staging use different databases and OAuth credentials. This prevents staging from accidentally modifying production data, and keeps credentials isolated.
+   > **Why separate values?** Production and staging use different databases and OAuth credentials. This prevents staging from accidentally modifying production data.
 
-   > **Note:** OAuth will only work on `staging.workout.tth.dev` (not random Vercel preview URLs like `project-abc123.vercel.app`) because Google requires exact redirect URIs.
+   > **Note:** OAuth only works on exact domains you registered. Random Vercel preview URLs (`project-abc123.vercel.app`) won't work - use `staging.workout.tth.dev` instead.
 
 3. **Configure Custom Domains**
 
