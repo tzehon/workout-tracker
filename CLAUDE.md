@@ -7,7 +7,7 @@ Workout Tracker - A full-stack web app for tracking an 18-week gymnastic rings b
 - **Framework:** Next.js 16 (App Router)
 - **Language:** TypeScript 5 (strict mode)
 - **Styling:** Tailwind CSS + shadcn/ui
-- **Database:** MongoDB (Atlas CLI local for dev, Atlas Cloud for staging/prod)
+- **Database:** MongoDB (Atlas CLI local for dev, Atlas Cloud for prod)
 - **Auth:** NextAuth.js with Google OAuth
 - **Testing:** Vitest + Testing Library
 - **CI/CD:** GitHub Actions + Vercel
@@ -31,26 +31,33 @@ npm run dev                      # Start Next.js dev server
 ## Project Structure
 ```
 app/
-├── (auth)/login/        # Public login page
-├── (protected)/         # Auth-required routes
-│   ├── dashboard/       # Main dashboard
-│   ├── workout/         # Workout logging
-│   ├── exercises/       # Exercise library
-│   ├── progress/        # Progress charts
-│   ├── metrics/         # Body weight tracking
-│   └── settings/        # User settings
-└── api/                 # API routes
+├── (auth)/login/           # Public login page
+├── (protected)/            # Auth-required routes
+│   ├── dashboard/          # Main dashboard
+│   ├── workout/            # Workout logging
+│   │   ├── [session]/      # Active workout session
+│   │   └── history/[id]/   # Past workout details
+│   ├── exercises/          # Exercise library
+│   │   └── [name]/         # Exercise details
+│   ├── program/            # Program overview
+│   ├── progress/           # Progress charts
+│   ├── metrics/            # Body weight tracking
+│   └── settings/           # User settings
+└── api/                    # API routes
 
 components/
 ├── ui/                  # shadcn/ui base components
 ├── workout/             # ExerciseCard, SetInput, RestTimer
-├── dashboard/           # WeeklySchedule, RecentWorkouts
-└── layout/              # Header, BottomNav
+├── dashboard/           # WeeklySchedule, RecentWorkouts, ProgressRing
+├── layout/              # Header, BottomNav
+├── shared/              # LoadingSpinner, EmptyState
+└── providers/           # SessionProvider
 
 lib/
 ├── mongodb.ts           # Database connection
 ├── auth.ts              # NextAuth config
 ├── program-data.ts      # 18-week program data
+├── date-utils.ts        # Date formatting utilities
 └── utils.ts             # Utility functions
 
 types/
@@ -70,6 +77,7 @@ types/
 - Component files use PascalCase
 - Utility files use kebab-case
 - Tests go in `tests/` directory mirroring source structure
+- When adding new features, add corresponding tests and update README if relevant
 
 ## Environment Variables
 - `MONGODB_URI` - MongoDB connection string
@@ -78,9 +86,8 @@ types/
 - `NEXTAUTH_URL` - Canonical app URL
 
 ## Git Workflow
+- Trunk-based development: push directly to `main`
 - `main` - Production (workout.tth.dev)
-- `staging` - Staging (staging.workout.tth.dev)
-- `feature/*` - Feature branches, merge to staging
 
 ## Testing
 - 100 tests across API routes, components, and utilities
