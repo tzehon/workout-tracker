@@ -133,7 +133,8 @@ export function ExerciseCard({
             <div className="rounded-lg bg-muted/50 p-3">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">
-                  Previous ({previousLog.progression.variant || "No variant"})
+                  Previous ({previousLog.progression.variant || "No variant"}
+                  {previousLog.progression.ringHeight && ` @ ${previousLog.progression.ringHeight}`})
                 </span>
                 {onCopyPrevious && (
                   <Button

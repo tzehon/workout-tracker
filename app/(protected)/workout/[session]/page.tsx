@@ -92,20 +92,25 @@ export default function WorkoutSessionPage({
     }
   }, [sessionData]);
 
-  // Fetch previous workout data
+  // Fetch previous workout data for all exercises (across all session types)
   useEffect(() => {
     async function fetchPreviousData() {
       try {
-        const res = await fetch(
-          `/api/workouts?session=${encodeURIComponent(sessionType)}&limit=1`
-        );
+        // Fetch recent workouts without session filter to find the most recent
+        // instance of each exercise regardless of which session it was in
+        const res = await fetch(`/api/workouts?limit=20`);
         if (res.ok) {
           const data = await res.json();
           if (data.success && data.data.workouts.length > 0) {
-            const prevWorkout = data.data.workouts[0] as ClientWorkout;
             const prevLogs: Record<string, ExerciseLog> = {};
-            prevWorkout.exercises.forEach((e) => {
-              prevLogs[e.exerciseName] = e;
+            // Workouts are sorted newest first, so we only keep the first
+            // (most recent) occurrence of each exercise
+            (data.data.workouts as ClientWorkout[]).forEach((workout) => {
+              workout.exercises.forEach((e) => {
+                if (!prevLogs[e.exerciseName]) {
+                  prevLogs[e.exerciseName] = e;
+                }
+              });
             });
             setPreviousWorkouts(prevLogs);
           }
@@ -116,7 +121,7 @@ export default function WorkoutSessionPage({
     }
 
     fetchPreviousData();
-  }, [sessionType]);
+  }, []);
 
   // Build variant suggestions from exercise definitions
   useEffect(() => {
