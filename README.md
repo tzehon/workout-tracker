@@ -14,7 +14,8 @@ A full-stack web application for tracking an 18-week gymnastic rings bodyweight 
 - **Free-Text Progression Variants** - Enter custom progression descriptions with autocomplete
 - **Rest Timer** - Built-in timer with vibration notification on mobile
 - **Workout History** - View past workouts with all logged data
-- **Dashboard** - Current phase/week display, clickable weekly schedule, progress tracking
+- **Dashboard** - Current phase/week display, training week session tracker, progress overview
+- **Flexible Training Weeks** - Complete all 4 sessions at your own pace, no calendar pressure
 - **Auto Week Progression** - Prompts to advance when all 4 sessions are complete, with options to repeat phases
 - **Exercise Progress** - Per-exercise stats with rep trends and variant history
 - **Progress Charts** - Visual charts for volume trends and completion
@@ -308,6 +309,30 @@ SEED_USER_EMAIL=your@email.com npm run seed:delete
 - Workouts: 4 per week (Push 1, Pull 1, Push 2, Pull 2)
 - Body metrics: 2 weigh-ins per week
 - Realistic progression: reps increase through weeks, deload week has reduced volume
+
+### Training Week System
+
+Training weeks are **flexible and not tied to calendar dates**. This design accommodates real-life schedules where you might not complete all sessions in a single calendar week.
+
+#### How It Works
+
+1. **Each training week has 4 sessions:** Push 1, Pull 1, Push 2, Pull 2
+2. **Complete them at your own pace** - take 5 days or 2 weeks, it doesn't matter
+3. **Progress is tracked per training week** - your dashboard shows sessions completed in your current training week (not calendar week)
+4. **Advance when ready** - once all 4 sessions are complete, you'll be prompted to move to the next week
+
+#### Example Scenario
+
+| Real Date | Action | Training Progress |
+|-----------|--------|-------------------|
+| Monday | Push 1 | Week 1: 1/4 |
+| Thursday | Pull 1 | Week 1: 2/4 |
+| (Weekend off) | - | - |
+| Next Monday | Push 2 | Week 1: 3/4 |
+| Next Wednesday | Pull 2 | Week 1: 4/4 ✓ |
+| (Prompted to advance) | Click "Move to Week 2" | Week 2: 0/4 |
+
+Your previous session data (sets, reps, variants, ring height) carries over to help you track progression, regardless of when you did them.
 
 ---
 
