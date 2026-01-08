@@ -23,8 +23,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { UserSettings } from "@/types";
-import { Settings, User, Trash2, Moon, Sun, AlertTriangle } from "lucide-react";
+import { Settings, User, Trash2, Moon, Sun, AlertTriangle, Info } from "lucide-react";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -133,9 +139,24 @@ export default function SettingsPage() {
           <CardTitle className="flex items-center gap-2 text-base">
             <Settings className="h-4 w-4" />
             Program Settings
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="h-4 w-4 cursor-help text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p className="font-medium">Flexible Training Weeks</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Training weeks are not tied to calendar dates. Complete all 4
+                    sessions (Push 1, Pull 1, Push 2, Pull 2) at your own pace,
+                    then advance to the next week when ready.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardTitle>
           <CardDescription>
-            Override your current position in the program
+            Manually override your current position in the program
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

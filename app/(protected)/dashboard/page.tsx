@@ -12,21 +12,10 @@ import { RecentWorkouts } from "@/components/dashboard/RecentWorkouts";
 import { WeekCompleteDialog } from "@/components/dashboard/WeekCompleteDialog";
 import { LoadingSpinner } from "@/components/shared/LoadingSpinner";
 import { ClientWorkout, SessionType } from "@/types";
-import { weeklySchedule, programPhases } from "@/lib/program-data";
+import { programPhases } from "@/lib/program-data";
 import { Play, Calendar, TrendingUp } from "lucide-react";
 
 const ALL_SESSIONS: SessionType[] = ["Push 1", "Pull 1", "Push 2", "Pull 2"];
-
-// Get today's recommended session
-function getTodaySession(): SessionType | null {
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
-  const today = days[new Date().getDay()];
-  const session = weeklySchedule[today as keyof typeof weeklySchedule];
-  if (session.includes("Push") || session.includes("Pull")) {
-    return session as SessionType;
-  }
-  return null;
-}
 
 export default function DashboardPage() {
   const { data: session, update: updateSession } = useSession();
@@ -40,8 +29,10 @@ export default function DashboardPage() {
   const currentPhase = (settings?.currentPhase || 1) as 1 | 2 | 3;
   const currentWeek = (settings?.currentWeek || 1) as 1 | 2 | 3 | 4 | 5 | 6;
   const isDeload = currentWeek === 6;
-  const todaySession = getTodaySession();
   const phaseData = programPhases.find((p) => p.phase === currentPhase);
+
+  // Get the next incomplete session for this training week
+  const nextSession = ALL_SESSIONS.find((s) => !weeklyCompletedSessions.includes(s)) || null;
 
   // Check if all 4 sessions are complete
   const isWeekComplete = ALL_SESSIONS.every((s) => weeklyCompletedSessions.includes(s));
@@ -82,18 +73,18 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch this week's workouts (for stats) and recent workouts separately
-        const [thisWeekRes, recentRes] = await Promise.all([
-          fetch("/api/workouts?limit=10&thisWeek=true"),
+        // Fetch workouts for the current training week (phase + week) and recent workouts
+        const [trainingWeekRes, recentRes] = await Promise.all([
+          fetch(`/api/workouts?phase=${currentPhase}&week=${currentWeek}&limit=10`),
           fetch("/api/workouts?limit=5"),
         ]);
 
-        if (thisWeekRes.ok) {
-          const data = await thisWeekRes.json();
+        if (trainingWeekRes.ok) {
+          const data = await trainingWeekRes.json();
           if (data.success) {
-            setWeeklyCompletedSessions(
-              (data.data.workouts || []).map((w: ClientWorkout) => w.session)
-            );
+            // Get unique sessions completed in this training week
+            const sessions = (data.data.workouts || []).map((w: ClientWorkout) => w.session);
+            setWeeklyCompletedSessions([...new Set(sessions)] as string[]);
           }
         }
 
@@ -110,8 +101,10 @@ export default function DashboardPage() {
       }
     }
 
-    fetchData();
-  }, []);
+    if (currentPhase && currentWeek) {
+      fetchData();
+    }
+  }, [currentPhase, currentWeek]);
 
   if (!session) {
     return null;
@@ -137,13 +130,13 @@ export default function DashboardPage() {
             {isDeload && " (Deload)"}
           </p>
         </div>
-        {todaySession && (
+        {nextSession && (
           <Button asChild size="lg" className="w-full sm:w-auto">
             <Link
-              href={`/workout/${encodeURIComponent(todaySession.toLowerCase().replace(" ", "-"))}`}
+              href={`/workout/${encodeURIComponent(nextSession.toLowerCase().replace(" ", "-"))}`}
             >
               <Play className="mr-2 h-4 w-4" />
-              Start {todaySession}
+              Start {nextSession}
             </Link>
           </Button>
         )}
@@ -153,7 +146,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">This Week</CardTitle>
+            <CardTitle className="text-sm font-medium">Week {currentWeek}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -163,7 +156,7 @@ export default function DashboardPage() {
                   {weeklyCompletedSessions.length}/4
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  workouts completed
+                  sessions done
                 </p>
               </div>
               <ProgressRing
@@ -216,7 +209,8 @@ export default function DashboardPage() {
       {/* Weekly Schedule */}
       <WeeklySchedule
         completedSessions={weeklyCompletedSessions}
-        currentDay={new Date().getDay()}
+        currentPhase={currentPhase}
+        currentWeek={currentWeek}
       />
 
       {/* Recent Workouts */}

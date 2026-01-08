@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const thisWeek = searchParams.get("thisWeek") === "true";
     const phase = searchParams.get("phase");
+    const week = searchParams.get("week");
     const sessionType = searchParams.get("session");
 
     const workoutsCollection = await getCollection<Workout>("workouts");
@@ -37,6 +38,10 @@ export async function GET(request: NextRequest) {
 
     if (phase) {
       query.phase = parseInt(phase);
+    }
+
+    if (week) {
+      query.week = parseInt(week);
     }
 
     if (sessionType) {
