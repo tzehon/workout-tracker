@@ -1,0 +1,21 @@
+AGENTS.md
+  s_61262b7207897e::t_a89527cfdc16ee 1-90
+CLAUDE.md
+  s_61262b7207897e::t_7724b144177fa4 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bcc60ff4e074074e2e9d96b0b1e230aa2d8b800a",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
