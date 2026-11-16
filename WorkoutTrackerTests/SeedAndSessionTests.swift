@@ -215,3 +215,17 @@ struct PluralTests {
         #expect(plural(5, "set") == "5 sets")
     }
 }
+
+struct AppearanceTests {
+    @Test func systemDoesNotOverride() {
+        #expect(AppAppearance.system.colorScheme == nil)
+        #expect(AppAppearance.light.colorScheme == .light)
+        #expect(AppAppearance.dark.colorScheme == .dark)
+    }
+
+    @Test func storedValuesAreStable() {
+        // Raw values are persisted in UserDefaults; renaming them would reset users' choice.
+        #expect(AppAppearance.allCases.map(\.rawValue) == ["system", "light", "dark"])
+        #expect(AppAppearance(rawValue: "dark") == .dark)
+    }
+}

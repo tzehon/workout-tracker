@@ -71,7 +71,11 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 
 ## Appearance
 
-- The app follows the system light/dark setting. Use semantic colours (`.primary`, `.secondary`,
+- The user picks System / Light / Dark in Today → ⋯ → Appearance (`AppAppearance`, stored with
+  `@AppStorage("appearance")`, applied once with `.preferredColorScheme` on `RootView`). Don't
+  add `.preferredColorScheme` anywhere else, or screens will disagree. Raw values are persisted,
+  so don't rename them.
+- Use semantic colours (`.primary`, `.secondary`,
   `Color(.tertiarySystemFill)`, `Theme.color(_:)`) and never hard-coded black or white.
   Check both modes with `xcrun simctl ui booted appearance dark|light`.
 - App icons are generated, not hand-edited. Change `scripts/make-icon.swift`, then run `make icons`.
@@ -83,8 +87,9 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 - Logic changes go in `Logic/` with unit tests. Keep views thin.
 - New UI flows get an XCUITest. Add `accessibilityIdentifier`s rather than matching on text.
   Existing ids: `workoutRow-<name>`, `nextWeekRow-<name>`, `startWorkout`, `finishWorkout`,
-  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`.
-- UI tests launch with `-UITestReset`, which gives an in-memory, freshly seeded store.
+  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`.
+- UI tests launch with `-UITestReset`, which gives an in-memory, freshly seeded store and resets
+  settings. Add `-UITestKeepSettings` to keep settings across a relaunch.
 
 ## Commits & docs
 

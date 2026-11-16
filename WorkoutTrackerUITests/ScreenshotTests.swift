@@ -46,5 +46,14 @@ final class ScreenshotTests: XCTestCase {
         app.staticTexts["Legs"].tap()
         sleep(1)
         shot("6-program")
+
+        app.tabBars.buttons["Today"].tap()
+        app.buttons["todayOptions"].tap()
+        app.buttons["Appearance"].tap()
+        XCTAssertTrue(app.buttons["Dark"].waitForExistence(timeout: 3))
+        shot("7-appearance-menu")
+        app.buttons["Dark"].tap()
+        sleep(1)
+        shot("8-dark-override")
     }
 }

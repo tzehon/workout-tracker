@@ -181,6 +181,8 @@ line index per workout. Push 2 and Legs are the only workouts with progression d
 | Suite | Covers |
 |-------|--------|
 | `RotationEngineTests` | start state, partial weeks, flip after all three, any order, full cycle, late weeks, off-week and repeat workouts, Legs per week, unsorted events, resets, empty program |
+| `AppearanceTests` | System doesn't override, Light/Dark map to colour schemes, stored raw values stay stable |
 | `SeedAndSessionTests` | progression parsing, seed matches Notion, week membership, imported sessions (values, order, dates), seed-once, imported sessions not moving rotation, session snapshots, add/remove sets, finish → rotation, last-performance rules, progress merging by name, formatting |
 | `WorkoutFlowUITests` | Today starts on Week A; logging Push 1 moves to "1 of 3 done" and shows in History; imported progression is charted |
+| `AppearanceUITests` | Dark / Light / System change the screen (measured by screenshot brightness); the choice survives a relaunch |
 | `ScreenshotTests` | opt-in screen capture (`make screenshots`) |

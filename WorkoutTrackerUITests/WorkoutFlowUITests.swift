@@ -4,7 +4,8 @@ import XCTest
 final class WorkoutFlowUITests: XCTestCase {
     var app: XCUIApplication!
 
-    override func setUp() {
+    @MainActor
+    func launchApp() {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launchArguments = ["-UITestReset"]
@@ -13,6 +14,7 @@ final class WorkoutFlowUITests: XCTestCase {
 
     @MainActor
     func testTodayStartsOnWeekA() {
+        launchApp()
         XCTAssertTrue(app.staticTexts["Week A"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.staticTexts["weekProgress"].label, "0 of 3 done")
         XCTAssertTrue(app.buttons["workoutRow-Push 1"].exists)
@@ -22,6 +24,7 @@ final class WorkoutFlowUITests: XCTestCase {
 
     @MainActor
     func testLoggingAWorkoutAdvancesTheWeek() {
+        launchApp()
         app.buttons["workoutRow-Push 1"].tap()
         app.buttons["startWorkout"].tap()
 
@@ -41,6 +44,7 @@ final class WorkoutFlowUITests: XCTestCase {
 
     @MainActor
     func testImportedProgressIsCharted() {
+        launchApp()
         app.tabBars.buttons["Progress"].tap()
         let row = app.staticTexts["Bulgarian Pushup"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))

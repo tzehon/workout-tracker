@@ -12,6 +12,7 @@ struct TodayView: View {
     @Query(sort: \WorkoutSession.startedAt, order: .reverse) private var sessions: [WorkoutSession]
     @Query private var resets: [RotationReset]
     @State private var path: [Route] = []
+    @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
 
     private var engine: RotationEngine { RotationEngine(templates: templates) }
     private var state: RotationState {
@@ -78,16 +79,27 @@ struct TodayView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
-                        Button("Switch to \(state.week.next.title)", systemImage: "arrow.left.arrow.right") {
-                            reset(to: state.week.next)
+                        Section("Rotation") {
+                            Button("Switch to \(state.week.next.title)", systemImage: "arrow.left.arrow.right") {
+                                reset(to: state.week.next)
+                            }
+                            Button("Restart \(state.week.title)", systemImage: "arrow.counterclockwise") {
+                                reset(to: state.week)
+                            }
                         }
-                        Button("Restart \(state.week.title)", systemImage: "arrow.counterclockwise") {
-                            reset(to: state.week)
+                        Picker(selection: $appearance) {
+                            ForEach(AppAppearance.allCases) { option in
+                                Label(option.title, systemImage: option.icon).tag(option)
+                            }
+                        } label: {
+                            Label("Appearance", systemImage: "circle.lefthalf.filled")
                         }
+                        .pickerStyle(.menu)
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel("Rotation options")
+                    .accessibilityLabel("Options")
+                    .accessibilityIdentifier("todayOptions")
                 }
             }
             .navigationDestination(for: Route.self) { route in
