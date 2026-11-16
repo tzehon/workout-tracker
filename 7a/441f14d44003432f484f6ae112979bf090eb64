@@ -1,0 +1,25 @@
+WorkoutTrackerTests/SeedAndSessionTests.swift
+  s_61262b7207897e::t_78fa1073d1cb16 1-209
+WorkoutTracker/Seed/SeedProgram.swift
+  s_61262b7207897e::t_77431dbc47a792 1-161
+WorkoutTracker/Logic/SessionLogic.swift
+  s_61262b7207897e::t_9593d08bd19dd4 1-146
+Makefile
+  s_61262b7207897e::t_66c70dc4a3be41 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7a441f14d44003432f484f6ae112979bf090eb64",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
