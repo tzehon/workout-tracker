@@ -1,0 +1,41 @@
+WorkoutTrackerUITests/AppearanceUITests.swift
+  s_61262b7207897e::t_04e8ac5b90b603 72-74
+  s_61262b7207897e::t_2232dac6160cc7 1-7,10-31,33,43-46,48-59,76
+  s_61262b7207897e::t_af9b74009b9601 60-71,75
+  s_61262b7207897e::t_f09b6bd7e7ca73 8-9,32,34-42,47
+WorkoutTrackerUITests/ScreenshotTests.swift
+  s_61262b7207897e::t_1b68b9216d922e 49-57
+WorkoutTracker/Views/Theme.swift
+  s_61262b7207897e::t_996341eb801547 20-53
+WorkoutTracker/Views/TodayView.swift
+  s_61262b7207897e::t_996341eb801547 15,82-88,90-95,97,101-102
+WorkoutTrackerTests/SeedAndSessionTests.swift
+  s_61262b7207897e::t_996341eb801547 218-231
+WorkoutTrackerUITests/WorkoutFlowUITests.swift
+  s_61262b7207897e::t_f09b6bd7e7ca73 7-8,17,27,47
+AGENTS.md
+  s_61262b7207897e::t_04e8ac5b90b603 74-78,90-92
+README.md
+  s_61262b7207897e::t_04e8ac5b90b603 25-27
+docs/architecture.md
+  s_61262b7207897e::t_04e8ac5b90b603 184,187
+WorkoutTracker/App/WorkoutTrackerApp.swift
+  s_61262b7207897e::t_af9b74009b9601 9-10,12,16
+  s_61262b7207897e::t_996341eb801547 35-36,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2ef7113324ed129b42c9cc848c4ee4edb1814cf0",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
