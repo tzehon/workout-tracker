@@ -1,0 +1,24 @@
+README.md
+  s_61262b7207897e::t_db23b5dc84ffb2 1-35
+docs/setup.md
+  s_61262b7207897e::t_1bd37da7898163 1-50
+docs/architecture.md
+  s_61262b7207897e::t_3c03df4c3ea3f7 168
+  s_61262b7207897e::t_b1a7ee0748cdf2 1-167,169-186
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b2aad0dddc359eec7fd770b1dc2cd474e22b9a0d",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
