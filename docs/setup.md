@@ -19,6 +19,7 @@ The Xcode project is **generated** from `project.yml` and is not committed. Run
 | `make ui-test` | Run the XCUITest end-to-end flows |
 | `make test` | Run everything |
 | `make screenshots` | Capture the main screens as PNGs in `build/screenshots/` |
+| `make icons` | Redraw the light, dark and tinted app icons (`scripts/make-icon.swift`) |
 | `make clean` | Remove `build/` and the generated project |
 
 Pick another simulator with `make test SIM="iPhone 17"`. The destination OS is pinned to

@@ -22,6 +22,8 @@ A personal iOS app for a gymnastic-rings program that alternates two weeks:
   rest, tempo, rings, cue, superset label). Edits apply to future workouts only.
 - **Imported history**: the Notion *Progression* column is loaded as past sessions, marked
   "Imported". They appear in History and charts but don't count toward the rotation.
+- **Light & dark mode**: the app follows the system setting. The icon has light, dark and
+  tinted versions for the iOS home-screen styles.
 
 ## Quick start
 

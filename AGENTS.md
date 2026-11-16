@@ -19,6 +19,7 @@ make unit-test     # Swift Testing suites, fast (~1s once built)
 make ui-test       # XCUITest flows (~35s)
 make test          # everything — must pass before every commit
 make screenshots   # PNGs of the main screens → build/screenshots/ (useful to eyeball UI changes)
+make icons         # redraw the light/dark/tinted app icons from scripts/make-icon.swift
 ```
 
 - Default destination: `iPhone 17 Pro`, iOS 26.5. Override with `SIM="iPhone 17"`, or edit `DEST` in the Makefile.
@@ -67,6 +68,14 @@ make screenshots   # PNGs of the main screens → build/screenshots/ (useful to 
   Mark UI test methods `@MainActor`.
 - Unit tests that touch SwiftData create `AppSchema.makeContainer(inMemory: true)` and seed with
   `Seeder.seed(context:now:)` using a fixed `now`.
+
+## Appearance
+
+- The app follows the system light/dark setting. Use semantic colours (`.primary`, `.secondary`,
+  `Color(.tertiarySystemFill)`, `Theme.color(_:)`) and never hard-coded black or white.
+  Check both modes with `xcrun simctl ui booted appearance dark|light`.
+- App icons are generated, not hand-edited. Change `scripts/make-icon.swift`, then run `make icons`.
+  The light icon must stay opaque; the dark and tinted icons have transparent backgrounds.
 
 ## Testing expectations
 
