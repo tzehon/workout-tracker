@@ -1,0 +1,66 @@
+name: WorkoutTracker
+options:
+  bundleIdPrefix: com.tzehon
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+targets:
+  WorkoutTracker:
+    type: application
+    platform: iOS
+    sources:
+      - WorkoutTracker
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tzehon.WorkoutTracker
+        INFOPLIST_KEY_CFBundleDisplayName: Workouts
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "1"
+        CODE_SIGN_STYLE: Automatic
+  WorkoutTrackerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - WorkoutTrackerTests
+    dependencies:
+      - target: WorkoutTracker
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.tzehon.WorkoutTrackerTests
+  WorkoutTrackerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - WorkoutTrackerUITests
+    dependencies:
+      - target: WorkoutTracker
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.tzehon.WorkoutTrackerUITests
+        SWIFT_DEFAULT_ACTOR_ISOLATION: nonisolated
+        TEST_TARGET_NAME: WorkoutTracker
+schemes:
+  WorkoutTracker:
+    build:
+      targets:
+        WorkoutTracker: all
+        WorkoutTrackerTests: [test]
+        WorkoutTrackerUITests: [test]
+    test:
+      targets:
+        - WorkoutTrackerTests
+        - WorkoutTrackerUITests
