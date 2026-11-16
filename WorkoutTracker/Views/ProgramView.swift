@@ -76,11 +76,15 @@ struct TemplateEditView: View {
                 TextField("Name", text: $workout.name)
                 Picker("Colour", selection: $workout.colorName) {
                     ForEach(Theme.colorNames, id: \.self) { name in
-                        Label(name.capitalized, systemImage: "circle.fill")
-                            .tint(Theme.color(name))
-                            .tag(name)
+                        Label {
+                            Text(name.capitalized)
+                        } icon: {
+                            Image(systemName: "circle.fill").foregroundStyle(Theme.color(name))
+                        }
+                        .tag(name)
                     }
                 }
+                .pickerStyle(.navigationLink)
                 Toggle("Week A", isOn: $workout.inWeekA)
                 Toggle("Week B", isOn: $workout.inWeekB)
             }

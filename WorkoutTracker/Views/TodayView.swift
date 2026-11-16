@@ -68,6 +68,7 @@ struct TodayView: View {
                         NavigationLink(value: Route.preview(workout)) {
                             WorkoutRow(workout: workout, status: .later)
                         }
+                        .accessibilityIdentifier("nextWeekRow-\(workout.name)")
                     }
                 } header: {
                     Text("Next: \(state.week.next.title)")
@@ -152,7 +153,7 @@ struct WorkoutRow: View {
                 .foregroundStyle(status == .later ? .secondary : Theme.color(workout.colorName))
             VStack(alignment: .leading, spacing: 2) {
                 Text(workout.name).font(.headline)
-                Text("\(workout.exercises.count) exercises").font(.caption).foregroundStyle(.secondary)
+                Text(plural(workout.exercises.count, "exercise")).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
             switch status {

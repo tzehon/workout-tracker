@@ -64,6 +64,11 @@ struct PrescriptionDetails: View {
     }
 }
 
+/// "1 exercise", "3 exercises".
+func plural(_ count: Int, _ noun: String) -> String {
+    "\(count) \(noun)\(count == 1 ? "" : "s")"
+}
+
 extension Date {
     var shortDate: String { formatted(.dateTime.day().month(.abbreviated)) }
     var longDate: String { formatted(date: .abbreviated, time: .omitted) }

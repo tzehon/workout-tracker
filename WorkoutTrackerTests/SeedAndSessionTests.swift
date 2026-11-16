@@ -207,3 +207,11 @@ struct SeedAndSessionTests {
         #expect(Format.prescription(sets: "3-4", target: "30-90", unit: .seconds, perSide: false) == "3-4 × 30-90s")
     }
 }
+
+struct PluralTests {
+    @Test func pluralises() {
+        #expect(plural(1, "exercise") == "1 exercise")
+        #expect(plural(0, "set") == "0 sets")
+        #expect(plural(5, "set") == "5 sets")
+    }
+}

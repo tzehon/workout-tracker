@@ -58,7 +58,7 @@ private struct HistoryRow: View {
                     Text(session.templateName).font(.headline)
                     if session.isImported { Pill(text: "Imported") }
                 }
-                Text("\(logged.count) exercises · \(totalSets) sets")
+                Text("\(plural(logged.count, "exercise")) · \(plural(totalSets, "set"))")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()

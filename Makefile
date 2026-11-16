@@ -2,7 +2,7 @@ SIM ?= iPhone 17 Pro
 DEST = platform=iOS Simulator,name=$(SIM),OS=26.5
 DERIVED = build/DerivedData
 
-.PHONY: project build test unit-test ui-test clean
+.PHONY: project build test unit-test ui-test screenshots clean
 
 project:
 	xcodegen generate --quiet
@@ -21,3 +21,9 @@ test: project
 
 clean:
 	rm -rf build WorkoutTracker.xcodeproj
+
+SHOTS ?= $(CURDIR)/build/screenshots
+screenshots: project
+	mkdir -p $(SHOTS)
+	TEST_RUNNER_SCREENSHOT_DIR=$(SHOTS) xcodebuild -project WorkoutTracker.xcodeproj -scheme WorkoutTracker -destination '$(DEST)' -derivedDataPath $(DERIVED) test -only-testing:WorkoutTrackerUITests/ScreenshotTests -quiet
+	@echo "Screenshots in $(SHOTS)"
