@@ -1,0 +1,33 @@
+WorkoutTracker/Views/TodayView.swift
+  s_61262b7207897e::t_dd91c2e2801933 71
+  s_61262b7207897e::t_da56b439c88a91 156
+Makefile
+  s_61262b7207897e::t_0921c57c5267cc 5,24-29
+WorkoutTracker/Views/HistoryView.swift
+  s_61262b7207897e::t_da56b439c88a91 61
+WorkoutTracker/Views/Theme.swift
+  s_61262b7207897e::t_da56b439c88a91 67-71
+WorkoutTrackerTests/SeedAndSessionTests.swift
+  s_61262b7207897e::t_da56b439c88a91 210-217
+WorkoutTracker/Views/ProgramView.swift
+  s_61262b7207897e::t_da56b439c88a91 79-84,87
+WorkoutTrackerUITests/ScreenshotTests.swift
+  s_61262b7207897e::t_0921c57c5267cc 1-23,25-50
+  s_61262b7207897e::t_dd91c2e2801933 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "82406b0b96076339551a67fd3f322dca2e569be2",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
