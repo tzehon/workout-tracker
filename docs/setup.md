@@ -1,0 +1,50 @@
+# Setup
+
+## Requirements
+
+- macOS with Xcode 26 or newer (tested with Xcode 27.2, iOS 26.5 simulator)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+- iOS 18.0+ on the device
+
+The Xcode project is **generated** from `project.yml` and is not committed. Run
+`make project` (or any other `make` target) after cloning and after editing `project.yml`.
+
+## Make targets
+
+| Command | What it does |
+|---------|--------------|
+| `make project` | Generate `WorkoutTracker.xcodeproj` from `project.yml` |
+| `make build` | Build for the simulator |
+| `make unit-test` | Run the Swift Testing unit suites (rotation, seed, sessions, progress) |
+| `make ui-test` | Run the XCUITest end-to-end flows |
+| `make test` | Run everything |
+| `make screenshots` | Capture the main screens as PNGs in `build/screenshots/` |
+| `make clean` | Remove `build/` and the generated project |
+
+Pick another simulator with `make test SIM="iPhone 17"`. The destination OS is pinned to
+26.5 in the `Makefile`; change `DEST` if you have a different runtime.
+
+## Running on your iPhone
+
+1. `make project && open WorkoutTracker.xcodeproj`
+2. Select the **WorkoutTracker** target → *Signing & Capabilities* → choose your Team.
+   (A free Apple ID works; apps signed that way expire after 7 days and need re-running.)
+   To keep this permanent, set `DEVELOPMENT_TEAM` in `project.yml` instead.
+3. If `com.tzehon.WorkoutTracker` is taken, change `PRODUCT_BUNDLE_IDENTIFIER` in `project.yml`.
+4. Plug in the phone, select it as the run destination, press ⌘R.
+
+## Data
+
+- Stored locally with SwiftData (`default.store` in the app's Application Support). Nothing syncs.
+- On first launch the Notion program and its Progression history are seeded once. A
+  `UserDefaults` flag (`didSeedProgram.v1`) stops it from re-seeding if you later delete workouts.
+- Deleting the app deletes all logged data.
+- UI tests launch with `-UITestReset`, which uses a fresh in-memory store and doesn't touch real data.
+
+## Imported history assumptions
+
+The Notion Progression cells have no dates. The importer assumes:
+
+- Each line in a cell is one session, **oldest first** (e.g. Bulgarian Pushup `8,8,6` then `6,6,3`).
+- Session *k* of *n* is dated *(n − k)* weeks before first launch, so charts read left to right.
+- `12s` / `35s` values are seconds.
