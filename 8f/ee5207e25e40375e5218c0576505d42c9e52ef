@@ -1,0 +1,23 @@
+WorkoutTrackerTests/RotationEngineTests.swift
+  s_61262b7207897e::t_68738dfee5fcd4 1-86
+WorkoutTracker/Models/Models.swift
+  s_61262b7207897e::t_d6a446522672c7 1-218
+WorkoutTracker/Logic/RotationEngine.swift
+  s_61262b7207897e::t_0092aed4d75fc3 1-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8fee5207e25e40375e5218c0576505d42c9e52ef",
+  "prompts": {},
+  "sessions": {
+    "s_61262b7207897e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8a557c43-37e7-4442-94d2-225bf3354f6f",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
