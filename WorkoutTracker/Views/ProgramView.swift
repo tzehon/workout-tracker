@@ -1,16 +1,34 @@
 import SwiftData
 import SwiftUI
 
+/// Value-based routes in the Program tab. Everything in this stack navigates by value:
+/// mixing in view-destination links makes SwiftUI push value routes underneath them.
+enum ProgramRoute: Hashable {
+    case library
+}
+
 /// Edit the program: workouts, which week they belong to, and their exercises.
 /// Edits only affect future sessions; logged sessions keep their own snapshot.
 struct ProgramView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \WorkoutTemplate.order) private var templates: [WorkoutTemplate]
+    @Query private var library: [LibraryExercise]
     @State private var pendingDelete: WorkoutTemplate?
 
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    NavigationLink(value: ProgramRoute.library) {
+                        LabeledContent {
+                            Text("\(library.count)")
+                        } label: {
+                            Label("Exercise Library", systemImage: "books.vertical")
+                        }
+                    }
+                    .accessibilityIdentifier("exerciseLibrary")
+                }
+
                 Section {
                     ForEach(templates) { workout in
                         NavigationLink(value: workout) {
@@ -25,6 +43,8 @@ struct ProgramView: View {
                     }
                     .onMove(perform: move)
                     .onDelete { offsets in pendingDelete = offsets.first.map { templates[$0] } }
+                } header: {
+                    Text("Workouts")
                 } footer: {
                     Text("Week A and Week B alternate. A week moves on once every workout in it is finished.")
                 }
@@ -32,6 +52,12 @@ struct ProgramView: View {
             .navigationTitle("Program")
             .navigationDestination(for: WorkoutTemplate.self) { TemplateEditView(workout: $0) }
             .navigationDestination(for: ExerciseTemplate.self) { ExerciseEditView(exercise: $0) }
+            .navigationDestination(for: LibraryExercise.self) { LibraryEditView(entry: $0) }
+            .navigationDestination(for: ProgramRoute.self) { route in
+                switch route {
+                case .library: LibraryView()
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { EditButton() }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -69,6 +95,7 @@ struct ProgramView: View {
 struct TemplateEditView: View {
     @Environment(\.modelContext) private var context
     @Bindable var workout: WorkoutTemplate
+    @State private var picking = false
 
     var body: some View {
         Form {
@@ -106,11 +133,15 @@ struct TemplateEditView: View {
                 .onMove(perform: move)
                 .onDelete(perform: delete)
 
-                Button("Add Exercise", systemImage: "plus", action: addExercise)
+                Button("Add Exercise", systemImage: "plus") { picking = true }
+                    .accessibilityIdentifier("addProgramExercise")
             }
         }
         .navigationTitle(workout.name)
         .toolbar { EditButton() }
+        .sheet(isPresented: $picking) {
+            LibraryPicker(title: "Add to \(workout.name)") { ExerciseLibrary.add($0, to: workout) }
+        }
     }
 
     private func move(from source: IndexSet, to destination: Int) {
@@ -127,24 +158,33 @@ struct TemplateEditView: View {
             context.delete(exercise)
         }
     }
-
-    private func addExercise() {
-        let exercise = ExerciseTemplate(
-            name: "New Exercise", order: (workout.exercises.map(\.order).max() ?? -1) + 1,
-            setsText: "3", plannedSets: 3, targetText: "8-12", restText: "1:30"
-        )
-        exercise.workout = workout
-        workout.exercises.append(exercise)
-    }
 }
 
 struct ExerciseEditView: View {
+    @Query private var library: [LibraryExercise]
     @Bindable var exercise: ExerciseTemplate
+    @State private var picking = false
 
     var body: some View {
+        let entry = library.first { $0.id == exercise.libraryID }
         Form {
-            Section("Exercise") {
-                TextField("Name", text: $exercise.name)
+            Section {
+                if let entry {
+                    NavigationLink(value: entry) {
+                        LabeledContent(exercise.name) {
+                            Text(entry.unit.label + (entry.perSide ? " · L&R" : ""))
+                        }
+                    }
+                } else {
+                    Text(exercise.name)
+                }
+                Button("Change Exercise", systemImage: "arrow.left.arrow.right") { picking = true }
+            } header: {
+                Text("Exercise")
+            } footer: {
+                Text("Name, measure and L&R come from the library. Changing the exercise resets this prescription to the new one's defaults.")
+            }
+            Section("In this workout") {
                 LabeledContent("Group") {
                     TextField("e.g. A1, B2", text: $exercise.groupLabel).multilineTextAlignment(.trailing)
                 }
@@ -155,13 +195,9 @@ struct ExerciseEditView: View {
                     TextField("e.g. 3-4", text: $exercise.setsText).multilineTextAlignment(.trailing)
                 }
                 Stepper("Rows to start with: \(exercise.plannedSets)", value: $exercise.plannedSets, in: 1...10)
-                Picker("Measure", selection: $exercise.unit) {
-                    ForEach(MeasureUnit.allCases) { Text($0.label).tag($0) }
-                }
                 LabeledContent(exercise.unit == .seconds ? "Seconds" : "Reps") {
                     TextField("e.g. 8-12", text: $exercise.targetText).multilineTextAlignment(.trailing)
                 }
-                Toggle("Each side (L&R)", isOn: $exercise.perSide)
                 LabeledContent("Rest") {
                     TextField("e.g. 1:30", text: $exercise.restText).multilineTextAlignment(.trailing)
                 }
@@ -175,5 +211,8 @@ struct ExerciseEditView: View {
         }
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $picking) {
+            LibraryPicker(title: "Change Exercise", excluding: exercise.libraryID) { exercise.apply($0) }
+        }
     }
 }

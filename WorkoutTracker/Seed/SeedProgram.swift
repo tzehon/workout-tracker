@@ -94,7 +94,7 @@ enum SeedProgram {
 }
 
 /// Parses a Notion progression line like "9,8,8" or "12s,12s,12s" into per-set values.
-enum ProgressionParser {
+nonisolated enum ProgressionParser {
     static func parse(_ line: String) -> [Int] {
         line.split(separator: ",").compactMap { part in
             let digits = part.trimmingCharacters(in: .whitespaces).filter(\.isNumber)
@@ -114,11 +114,12 @@ enum Seeder {
     /// Set once Pancake has been added (by the first seed, or by the upgrade for older installs).
     static let didAddPancakeKey = "didAddPancake.v1"
 
-    /// Everything the store needs at launch: first-time seed and upgrades for older installs.
-    /// Safe to run on every launch.
+    /// Everything the store needs at launch: first-time seed, upgrades for older installs,
+    /// and linking any exercise not yet in the library. Safe to run on every launch.
     static func prepare(context: ModelContext, defaults: UserDefaults = .standard, now: Date = .now) throws {
         try seedIfNeeded(context: context, defaults: defaults, now: now)
         try addPancakeIfNeeded(context: context, defaults: defaults, now: now)
+        try ExerciseLibrary.linkUnlinked(context: context)
     }
 
     /// Seeds the program on first launch only, so deleting workouts later doesn't bring them back.
@@ -133,13 +134,15 @@ enum Seeder {
         defaults.set(true, forKey: didSeedKey)
     }
 
-    /// Inserts the Notion program and recreates its Progression column as imported sessions.
+    /// Inserts the Notion program, recreates its Progression column as imported sessions, and
+    /// builds the exercise library from it.
     /// Imported session k of n is dated (n - k) weeks before `now` so charts read oldest → newest.
     static func seed(context: ModelContext, now: Date = .now) throws {
         for (index, workout) in SeedProgram.workouts.enumerated() {
             insert(workout, order: index, context: context, now: now)
         }
         try context.save()
+        try ExerciseLibrary.linkUnlinked(context: context)
     }
 
     /// Adds Pancake to installs seeded before it existed. Runs once; if Pancake was deleted

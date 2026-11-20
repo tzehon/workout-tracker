@@ -193,11 +193,11 @@ struct SeedAndSessionTests {
         dip.sortedSets[1].value = 11
         SessionFactory.finish(push1, at: now)
 
-        let points = ProgressSeries.points(forExerciseNamed: "tricep dip", in: try sessions())
+        let series = try #require(ProgressSeries.series(in: try sessions()).first { $0.name == "Tricep Dip" })
+        let points = ProgressSeries.points(for: series.key, in: try sessions())
         #expect(points.map(\.best) == [10, 10, 12])
         #expect(points.map(\.total) == [28, 24, 23])
         #expect(points.map(\.isImported) == [true, true, false])
-        #expect(ProgressSeries.exerciseNames(in: try sessions()).contains("Tricep Dip"))
     }
 
     @Test func formatting() {

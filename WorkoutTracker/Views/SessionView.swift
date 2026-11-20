@@ -24,7 +24,7 @@ struct SessionView: View {
                 ExerciseLogSection(
                     exercise: exercise,
                     last: PerformanceLookup.last(
-                        exerciseTemplateID: exercise.exerciseTemplateID, name: exercise.name,
+                        exerciseTemplateID: exercise.exerciseTemplateID, libraryID: exercise.libraryID, name: exercise.name,
                         in: allSessions.filter { $0.startedAt < session.startedAt || !session.isFinished },
                         excluding: session.id
                     ),

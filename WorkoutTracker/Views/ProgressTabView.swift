@@ -6,20 +6,20 @@ struct ProgressTabView: View {
     @Query(sort: \WorkoutSession.startedAt) private var sessions: [WorkoutSession]
 
     var body: some View {
-        let names = ProgressSeries.exerciseNames(in: sessions)
+        let allSeries = ProgressSeries.series(in: sessions)
         NavigationStack {
             Group {
-                if names.isEmpty {
+                if allSeries.isEmpty {
                     ContentUnavailableView("No progress yet", systemImage: "chart.xyaxis.line",
                                            description: Text("Log a workout to start charting each exercise."))
                 } else {
-                    List(names, id: \.self) { name in
-                        let points = ProgressSeries.points(forExerciseNamed: name, in: sessions)
-                        let unit = ProgressSeries.unit(forExerciseNamed: name, in: sessions)
-                        NavigationLink(value: name) {
+                    List(allSeries) { series in
+                        let points = ProgressSeries.points(for: series.key, in: sessions)
+                        let unit = ProgressSeries.unit(for: series.key, in: sessions)
+                        NavigationLink(value: series) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(name).font(.headline)
+                                    Text(series.name).font(.headline)
                                     Text("\(points.count) session\(points.count == 1 ? "" : "s")")
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
@@ -35,7 +35,7 @@ struct ProgressTabView: View {
                 }
             }
             .navigationTitle("Progress")
-            .navigationDestination(for: String.self) { ExerciseProgressView(name: $0) }
+            .navigationDestination(for: ExerciseSeries.self) { ExerciseProgressView(series: $0) }
         }
     }
 }
@@ -48,12 +48,12 @@ struct ExerciseProgressView: View {
     }
 
     @Query(sort: \WorkoutSession.startedAt) private var sessions: [WorkoutSession]
-    var name: String
+    var series: ExerciseSeries
     @State private var metric: Metric = .best
 
     var body: some View {
-        let points = ProgressSeries.points(forExerciseNamed: name, in: sessions)
-        let unit = ProgressSeries.unit(forExerciseNamed: name, in: sessions)
+        let points = ProgressSeries.points(for: series.key, in: sessions)
+        let unit = ProgressSeries.unit(for: series.key, in: sessions)
         let unitName = unit == .seconds ? "Seconds" : "Reps"
 
         List {
@@ -96,7 +96,7 @@ struct ExerciseProgressView: View {
                 }
             }
         }
-        .navigationTitle(name)
+        .navigationTitle(series.name)
         .navigationBarTitleDisplayMode(.inline)
     }
 }

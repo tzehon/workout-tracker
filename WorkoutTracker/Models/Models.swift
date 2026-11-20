@@ -61,6 +61,8 @@ final class ExerciseTemplate {
     var tempo: String = ""
     /// Extra coaching cue, e.g. "Same hand as extended leg".
     var cue: String = ""
+    /// Soft link to the `LibraryExercise` this slot uses. Name, unit and per-side come from it.
+    var libraryID: UUID?
     var workout: WorkoutTemplate?
 
     init(
@@ -90,6 +92,80 @@ final class ExerciseTemplate {
         self.ringSetting = ringSetting
         self.tempo = tempo
         self.cue = cue
+    }
+
+    var unit: MeasureUnit {
+        get { MeasureUnit(rawValue: unitRaw) ?? .reps }
+        set { unitRaw = newValue.rawValue }
+    }
+
+    /// Makes this slot use `library`, taking its name and its default prescription.
+    /// The group label and position stay.
+    func apply(_ library: LibraryExercise) {
+        libraryID = library.id
+        name = library.name
+        unitRaw = library.unitRaw
+        perSide = library.perSide
+        cue = library.cue
+        setsText = library.setsText
+        plannedSets = library.plannedSets
+        targetText = library.targetText
+        restText = library.restText
+        tempo = library.tempo
+        ringSetting = library.ringSetting
+    }
+}
+
+// MARK: - Exercise library
+
+/// One exercise in the library. Program slots and session exercises point at it by `libraryID`.
+/// The prescription fields are defaults, copied when the exercise is added to a workout or session.
+@Model
+final class LibraryExercise {
+    var id: UUID = UUID()
+    var name: String = ""
+    var unitRaw: String = MeasureUnit.reps.rawValue
+    var perSide: Bool = false
+    var cue: String = ""
+    var notes: String = ""
+    var setsText: String = "3"
+    var plannedSets: Int = 3
+    var targetText: String = "8-12"
+    var restText: String = "1:30"
+    var tempo: String = ""
+    var ringSetting: String = ""
+    var createdAt: Date = Date()
+
+    init(name: String, unit: MeasureUnit = .reps, perSide: Bool = false) {
+        self.id = UUID()
+        self.name = name
+        self.unitRaw = unit.rawValue
+        self.perSide = perSide
+        self.createdAt = .now
+    }
+
+    /// A library entry whose defaults are taken from an existing program exercise.
+    convenience init(copying template: ExerciseTemplate) {
+        self.init(name: template.name, unit: template.unit, perSide: template.perSide)
+        cue = template.cue
+        setsText = template.setsText
+        plannedSets = template.plannedSets
+        targetText = template.targetText
+        restText = template.restText
+        tempo = template.tempo
+        ringSetting = template.ringSetting
+    }
+
+    /// A library entry for an exercise that only exists in logged history.
+    convenience init(copying logged: SessionExercise) {
+        self.init(name: logged.name, unit: logged.unit, perSide: logged.perSide)
+        cue = logged.cue
+        setsText = logged.setsText
+        plannedSets = ProgressionParser.plannedSets(from: logged.setsText)
+        targetText = logged.targetText
+        restText = logged.restText
+        tempo = logged.tempo
+        ringSetting = logged.ringSetting
     }
 
     var unit: MeasureUnit {
@@ -134,6 +210,8 @@ final class WorkoutSession {
 final class SessionExercise {
     var id: UUID = UUID()
     var exerciseTemplateID: UUID?
+    /// Soft link to the library exercise, so history and charts follow renames and swaps.
+    var libraryID: UUID?
     var name: String = ""
     var order: Int = 0
     var groupLabel: String = ""
@@ -153,6 +231,7 @@ final class SessionExercise {
     init(snapshotOf template: ExerciseTemplate) {
         self.id = UUID()
         self.exerciseTemplateID = template.id
+        self.libraryID = template.libraryID
         self.name = template.name
         self.order = template.order
         self.groupLabel = template.groupLabel
@@ -209,7 +288,7 @@ final class RotationReset {
 
 enum AppSchema {
     static let models: [any PersistentModel.Type] = [
-        WorkoutTemplate.self, ExerciseTemplate.self,
+        WorkoutTemplate.self, ExerciseTemplate.self, LibraryExercise.self,
         WorkoutSession.self, SessionExercise.self, SetEntry.self,
         RotationReset.self,
     ]

@@ -33,7 +33,8 @@ struct WorkoutPreviewView: View {
                         perSide: exercise.perSide, rest: exercise.restText, tempo: exercise.tempo,
                         rings: exercise.ringSetting, cue: exercise.cue
                     )
-                    if let last = PerformanceLookup.last(exerciseTemplateID: exercise.id, name: exercise.name, in: sessions) {
+                    if let last = PerformanceLookup.last(exerciseTemplateID: exercise.id, libraryID: exercise.libraryID,
+                                                         name: exercise.name, in: sessions) {
                         Text("Last (\(last.date.shortDate)): \(Format.values(last.values, unit: last.unit))")
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Theme.color(workout.colorName))
