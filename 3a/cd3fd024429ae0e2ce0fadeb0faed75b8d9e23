@@ -1,0 +1,37 @@
+WorkoutTracker/App/WorkoutTrackerApp.swift
+  s_7cefc06a14494e::t_dc2acaa6f750c0 19
+WorkoutTracker/Logic/RotationEngine.swift
+  s_7cefc06a14494e::t_d594314a57d92a 17-18,31-33,55-57,66,95-97
+WorkoutTracker/Logic/SessionLogic.swift
+  s_7cefc06a14494e::t_ceaee271d3c189 140,142-144
+WorkoutTracker/Models/Models.swift
+  s_7cefc06a14494e::t_712dbf13518f3c 196-198,200,204
+WorkoutTracker/Seed/SeedProgram.swift
+  s_7cefc06a14494e::t_9a17ce0328e094 4-5,20-21,81-90,92-93,114-122,130-131,139-171,173-185,187-190,192-212
+WorkoutTracker/Views/Theme.swift
+  s_7cefc06a14494e::t_33924756f8d86f 2,5,16,20-27,92-95
+WorkoutTrackerTests/PancakeTests.swift
+  s_7cefc06a14494e::t_1bb015209f6685 1-117
+WorkoutTrackerTests/RotationEngineTests.swift
+  s_7cefc06a14494e::t_f1713c427b7220 80-99
+WorkoutTrackerTests/SeedAndSessionTests.swift
+  s_7cefc06a14494e::t_4739353c35928c 45,47-48,53-54,102,142,208-209
+WorkoutTrackerUITests/WorkoutFlowUITests.swift
+  s_7cefc06a14494e::t_25d116a3fde6f3 19,23-24,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3acd3fd024429ae0e2ce0fadeb0faed75b8d9e23",
+  "prompts": {},
+  "sessions": {
+    "s_7cefc06a14494e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4467a556-f636-4de9-8386-526c12010627",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
