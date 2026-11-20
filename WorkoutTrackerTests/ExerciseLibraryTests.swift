@@ -120,4 +120,65 @@ struct ExerciseLibraryTests {
         #expect(series.count == 1)
         #expect(ProgressSeries.points(for: series[0].key, in: try sessions()).count == 2)
     }
+
+    // MARK: Session editing
+
+    @Test func addExerciseToSessionOnly() throws {
+        let push1 = try template("Push 1")
+        let session = SessionFactory.start(push1, at: now, context: context)
+        let added = SessionFactory.addExercise(try entry("Calf Stretch"), to: session)
+
+        #expect(session.sortedExercises.last?.id == added.id)
+        #expect(added.sets.count == 3)
+        #expect(added.unit == .seconds)
+        #expect(added.exerciseTemplateID == nil)
+        #expect(added.libraryID == (try entry("Calf Stretch")).id)
+        #expect(push1.exercises.count == 5)
+    }
+
+    @Test func swapReplacesExerciseInPlace() throws {
+        let push1 = try template("Push 1")
+        let session = SessionFactory.start(push1, at: now, context: context)
+        let first = session.sortedExercises[0]
+        first.sortedSets[0].value = 9
+
+        SessionFactory.swap(first, with: try entry("Bulgarian Pushup"), context: context)
+
+        #expect(session.sortedExercises[0].id == first.id)
+        #expect(first.name == "Bulgarian Pushup")
+        #expect(first.targetText == "8-10")
+        #expect(first.exerciseTemplateID == nil)
+        #expect(first.sets.count == 3)
+        #expect(first.loggedValues.isEmpty)
+        // The program is untouched.
+        #expect(push1.sortedExercises[0].name == "Ring Dip (Elbows in)")
+
+        // "Last time" follows the library exercise's history (Push 2's imported sessions).
+        let last = PerformanceLookup.last(exerciseTemplateID: first.exerciseTemplateID, libraryID: first.libraryID,
+                                          name: first.name, in: try sessions(), excluding: session.id)
+        #expect(last?.values == [6, 6, 3])
+    }
+
+    @Test func swappedExerciseChartsWithItsLibraryHistory() throws {
+        let session = SessionFactory.start(try template("Push 1"), at: now, context: context)
+        let first = session.sortedExercises[0]
+        SessionFactory.swap(first, with: try entry("Bulgarian Pushup"), context: context)
+        first.sortedSets[0].value = 7
+        SessionFactory.finish(session, at: now)
+
+        let key = "lib:\((try entry("Bulgarian Pushup")).id.uuidString)"
+        #expect(ProgressSeries.points(for: key, in: try sessions()).map(\.best) == [8, 6, 7])
+    }
+
+    @Test func removeExerciseFromSessionOnly() throws {
+        let push1 = try template("Push 1")
+        let session = SessionFactory.start(push1, at: now, context: context)
+        let chestFly = try #require(session.exercises.first { $0.name == "Chest Fly" })
+        SessionFactory.removeExercise(chestFly, from: session, context: context)
+        try context.save()
+
+        #expect(session.exercises.count == 4)
+        #expect(!session.exercises.contains { $0.name == "Chest Fly" })
+        #expect(push1.exercises.count == 5)
+    }
 }

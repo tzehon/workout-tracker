@@ -11,6 +11,10 @@ struct SessionView: View {
     @State private var confirmDiscard = false
     @State private var confirmFinishEmpty = false
     @State private var deleteOnDisappear = false
+    @State private var adding = false
+    @State private var swapTarget: SessionExercise?
+    @State private var confirmSwap: SessionExercise?
+    @State private var confirmRemove: SessionExercise?
 
     var body: some View {
         List {
@@ -29,8 +33,20 @@ struct SessionView: View {
                         excluding: session.id
                     ),
                     tint: Theme.color(session.colorName),
-                    focused: $focused
+                    focused: $focused,
+                    onSwap: {
+                        if exercise.loggedValues.isEmpty { swapTarget = exercise } else { confirmSwap = exercise }
+                    },
+                    onRemove: {
+                        if exercise.loggedValues.isEmpty { remove(exercise) } else { confirmRemove = exercise }
+                    }
                 )
+            }
+            Section {
+                Button("Add Exercise", systemImage: "plus") { adding = true }
+                    .accessibilityIdentifier("addExerciseToSession")
+            } footer: {
+                Text("Adding, swapping or removing an exercise only changes this workout, not the program.")
             }
             Section("Workout notes") {
                 TextField("How did it feel?", text: $session.note, axis: .vertical)
@@ -89,6 +105,39 @@ struct SessionView: View {
         .confirmationDialog("No sets logged yet. Finish anyway?", isPresented: $confirmFinishEmpty, titleVisibility: .visible) {
             Button("Finish Workout") { finish() }
         }
+        .confirmationDialog(
+            "Swap \(confirmSwap?.name ?? "exercise")?",
+            isPresented: isPresent($confirmSwap), titleVisibility: .visible, presenting: confirmSwap
+        ) { exercise in
+            Button("Swap and Clear Sets", role: .destructive) { swapTarget = exercise }
+        } message: { exercise in
+            Text("The \(plural(exercise.loggedValues.count, "set")) logged for it will be cleared.")
+        }
+        .confirmationDialog(
+            "Remove \(confirmRemove?.name ?? "exercise")?",
+            isPresented: isPresent($confirmRemove), titleVisibility: .visible, presenting: confirmRemove
+        ) { exercise in
+            Button("Remove from Workout", role: .destructive) { remove(exercise) }
+        } message: { exercise in
+            Text("The \(plural(exercise.loggedValues.count, "set")) logged for it will be deleted.")
+        }
+        .sheet(item: $swapTarget) { exercise in
+            LibraryPicker(title: "Swap \(exercise.name)", excluding: exercise.libraryID) {
+                SessionFactory.swap(exercise, with: $0, context: context)
+            }
+        }
+        .sheet(isPresented: $adding) {
+            LibraryPicker(title: "Add Exercise") { SessionFactory.addExercise($0, to: session) }
+        }
+    }
+
+    private func isPresent(_ item: Binding<SessionExercise?>) -> Binding<Bool> {
+        Binding(get: { item.wrappedValue != nil }, set: { if !$0 { item.wrappedValue = nil } })
+    }
+
+    private func remove(_ exercise: SessionExercise) {
+        focused = nil
+        withAnimation { SessionFactory.removeExercise(exercise, from: session, context: context) }
     }
 
     private func finish() {
@@ -104,6 +153,8 @@ private struct ExerciseLogSection: View {
     var last: PastPerformance?
     var tint: Color
     var focused: FocusState<UUID?>.Binding
+    var onSwap: () -> Void
+    var onRemove: () -> Void
 
     var body: some View {
         Section {
@@ -160,6 +211,20 @@ private struct ExerciseLogSection: View {
             HStack(spacing: 6) {
                 if !exercise.groupLabel.isEmpty { Pill(text: exercise.groupLabel, color: tint) }
                 Text(exercise.name)
+                Spacer()
+                Menu {
+                    Button("Swap Exercise", systemImage: "arrow.left.arrow.right", action: onSwap)
+                        .accessibilityIdentifier("swapExercise")
+                    Button("Remove from Workout", systemImage: "trash", role: .destructive, action: onRemove)
+                        .accessibilityIdentifier("removeExercise")
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                        .font(.body)
+                        .foregroundStyle(tint)
+                        .frame(minWidth: 44, minHeight: 32, alignment: .trailing)
+                }
+                .accessibilityLabel("Options for \(exercise.name)")
+                .accessibilityIdentifier("exerciseMenu-\(exercise.order)")
             }
             .font(.headline)
             .foregroundStyle(.primary)

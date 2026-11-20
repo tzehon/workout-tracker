@@ -34,6 +34,35 @@ enum SessionFactory {
         context.delete(last)
     }
 
+    /// Adds a library exercise to the end of this session only (the program is unchanged).
+    @discardableResult
+    static func addExercise(_ entry: LibraryExercise, to session: WorkoutSession) -> SessionExercise {
+        let logged = SessionExercise(library: entry, order: (session.exercises.map(\.order).max() ?? -1) + 1)
+        logged.session = session
+        session.exercises.append(logged)
+        for index in 0..<max(1, entry.plannedSets) {
+            addSet(to: logged, order: index)
+        }
+        return logged
+    }
+
+    /// Replaces `exercise` with a library exercise in the same slot, for this session only.
+    /// Its set rows (and anything logged in them) are replaced with the new exercise's rows.
+    static func swap(_ exercise: SessionExercise, with entry: LibraryExercise, context: ModelContext) {
+        exercise.apply(entry)
+        for set in exercise.sets { context.delete(set) }
+        exercise.sets.removeAll()
+        for index in 0..<max(1, entry.plannedSets) {
+            addSet(to: exercise, order: index)
+        }
+    }
+
+    /// Removes an exercise (and its sets) from this session only.
+    static func removeExercise(_ exercise: SessionExercise, from session: WorkoutSession, context: ModelContext) {
+        session.exercises.removeAll { $0.id == exercise.id }
+        context.delete(exercise)
+    }
+
     static func finish(_ session: WorkoutSession, at date: Date = .now) {
         session.finishedAt = date
     }

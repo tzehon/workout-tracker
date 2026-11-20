@@ -245,6 +245,29 @@ final class SessionExercise {
         self.ringSetting = template.ringSetting
     }
 
+    /// A session-only exercise taken straight from the library (added or swapped in mid-workout).
+    init(library: LibraryExercise, order: Int) {
+        self.id = UUID()
+        self.order = order
+        apply(library)
+    }
+
+    /// Replaces what this exercise is with `library`, keeping its slot (order and group label).
+    /// The link to the program exercise is dropped: it's no longer the same exercise.
+    func apply(_ library: LibraryExercise) {
+        exerciseTemplateID = nil
+        libraryID = library.id
+        name = library.name
+        setsText = library.setsText
+        targetText = library.targetText
+        unitRaw = library.unitRaw
+        perSide = library.perSide
+        restText = library.restText
+        tempo = library.tempo
+        cue = library.cue
+        ringSetting = library.ringSetting
+    }
+
     var unit: MeasureUnit { MeasureUnit(rawValue: unitRaw) ?? .reps }
     var sortedSets: [SetEntry] { sets.sorted { $0.order < $1.order } }
     /// Logged values in set order, skipping empty sets.
