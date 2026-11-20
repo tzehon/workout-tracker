@@ -21,9 +21,14 @@ make ui-test       # XCUITest flows (~35s)
 make test          # everything — must pass before every commit
 make screenshots   # PNGs of the main screens → build/screenshots/ (useful to eyeball UI changes)
 make icons         # redraw the light/dark/tinted app icons from scripts/make-icon.swift
+make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release workflow publishes)
 ```
 
-- Default destination: `iPhone 17 Pro`, iOS 26.5. Override with `SIM="iPhone 17"`, or edit `DEST` in the Makefile.
+- Default destination: `iPhone 17 Pro`, iOS 26.5. Override with `SIM="iPhone 17"`, `OS=26.4`, or a
+  full `DEST=...`. `scripts/ci-destination.sh` prints one for the newest installed runtime.
+- CI is `.github/workflows/ci.yml`: unit + UI tests on every push to main and every PR, and
+  `v*` tags publish an unsigned `.ipa` as a GitHub Release. Keep `make` targets as the single
+  source of build commands, so CI and local runs match.
 - `WorkoutTracker.xcodeproj` is **generated and gitignored**. Never edit it. Change `project.yml` instead.
 - `-quiet` hides passing output, so with `make test` an exit code of 0 is the pass signal.
 

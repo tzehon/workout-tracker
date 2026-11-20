@@ -1,0 +1,78 @@
+name: CI
+
+# Tests run on every push to main and on pull requests.
+# Pushing a tag like v1.1 also builds an unsigned Release .ipa and publishes a GitHub Release.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Pick a simulator
+        run: echo "DEST=$(scripts/ci-destination.sh)" >> "$GITHUB_ENV"
+
+      - name: Unit tests
+        run: make unit-test XCODEBUILD_FLAGS="-resultBundlePath build/unit-tests.xcresult"
+
+      - name: UI tests
+        run: make ui-test XCODEBUILD_FLAGS="-resultBundlePath build/ui-tests.xcresult"
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/*.xcresult
+          retention-days: 7
+
+  release:
+    name: Release build
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: test
+    runs-on: macos-26
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Build unsigned .ipa
+        run: make ipa VERSION="${GITHUB_REF_NAME#v}" BUILD_NUMBER="$GITHUB_RUN_NUMBER"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/WorkoutTracker-*-unsigned.ipa \
+            --title "Workouts $GITHUB_REF_NAME" --generate-notes

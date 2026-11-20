@@ -20,10 +20,25 @@ The Xcode project is **generated** from `project.yml` and is not committed. Run
 | `make test` | Run everything |
 | `make screenshots` | Capture the main screens as PNGs in `build/screenshots/` |
 | `make icons` | Redraw the light, dark and tinted app icons (`scripts/make-icon.swift`) |
+| `make ipa VERSION=1.1` | Unsigned Release build packaged as `build/WorkoutTracker-1.1-unsigned.ipa` |
 | `make clean` | Remove `build/` and the generated project |
 
-Pick another simulator with `make test SIM="iPhone 17"`. The destination OS is pinned to
-26.5 in the `Makefile`; change `DEST` if you have a different runtime.
+Pick another simulator with `make test SIM="iPhone 17"` or another runtime with `OS=26.4`.
+`DEST` overrides the whole destination, e.g. `make test DEST="$(scripts/ci-destination.sh)"`
+picks an iPhone on the newest runtime you have installed.
+
+## CI/CD
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on a `macos-26` runner with the latest stable Xcode:
+
+| Trigger | What runs |
+|---------|-----------|
+| Push to `main`, pull request, manual run | Generate the project, then unit tests and UI tests on the newest iPhone simulator. On failure the `.xcresult` bundles are uploaded as an artifact. |
+| Push a tag `v*` (e.g. `git tag v1.1 && git push origin v1.1`) | The tests, then `make ipa` with the tag as the version and the run number as the build, published as a GitHub Release. |
+
+The release `.ipa` is **unsigned** because the project signs with a personal team. Install
+from Xcode as below, or re-sign the `.ipa` with your own tool. TestFlight would need the paid
+Apple Developer Program and App Store Connect API keys as repository secrets.
 
 ## Running on your iPhone
 

@@ -1,5 +1,7 @@
 # Workout Tracker
 
+[![CI](https://github.com/tzehon/workout-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/tzehon/workout-tracker/actions/workflows/ci.yml)
+
 A personal iOS app for a gymnastic-rings program that alternates two weeks:
 
 | Week | Workouts |
