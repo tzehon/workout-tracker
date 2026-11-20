@@ -77,6 +77,26 @@ struct RotationEngineTests {
         #expect(state.completed == [push2])
     }
 
+    @Test func weekStartIsTheEventThatBeganIt() {
+        #expect(engine.state(for: [done(push1, 1)]).weekStartedAt == nil)
+        let flipped = engine.state(for: [done(push1, 1), done(pull1, 2), done(legs, 3), done(push2, 4)])
+        #expect(flipped.weekStartedAt == day(3))
+        let reset = engine.state(for: [done(push1, 1), RotationEvent(date: day(2), kind: .reset(to: .b))])
+        #expect(reset.weekStartedAt == day(2))
+    }
+
+    @Test func resetCanCarryTheWeekCount() {
+        let events = [
+            done(push1, 1), done(pull1, 2), done(legs, 3),
+            RotationEvent(date: day(4), kind: .reset(to: .a, weeksCompleted: 7)),
+            done(push1, 5),
+        ]
+        let state = engine.state(for: events)
+        #expect(state.week == .a)
+        #expect(state.weeksCompleted == 7)
+        #expect(state.completed == [push1])
+    }
+
     @Test func emptyWeekNeverAdvances() {
         let empty = RotationEngine(weekA: [], weekB: [])
         let state = empty.state(for: [done(push1, 1)])

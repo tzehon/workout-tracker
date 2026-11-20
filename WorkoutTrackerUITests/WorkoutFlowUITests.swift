@@ -16,10 +16,12 @@ final class WorkoutFlowUITests: XCTestCase {
     func testTodayStartsOnWeekA() {
         launchApp()
         XCTAssertTrue(app.staticTexts["Week A"].waitForExistence(timeout: 10))
-        XCTAssertEqual(app.staticTexts["weekProgress"].label, "0 of 3 done")
+        XCTAssertEqual(app.staticTexts["weekProgress"].label, "0 of 4 done")
         XCTAssertTrue(app.buttons["workoutRow-Push 1"].exists)
         XCTAssertTrue(app.buttons["workoutRow-Pull 1"].exists)
         XCTAssertTrue(app.buttons["workoutRow-Legs"].exists)
+        XCTAssertTrue(app.buttons["workoutRow-Pancake"].exists)
+        XCTAssertTrue(app.buttons["nextWeekRow-Pancake"].exists)
     }
 
     @MainActor
@@ -36,7 +38,7 @@ final class WorkoutFlowUITests: XCTestCase {
         app.buttons["finishWorkout"].tap()
 
         XCTAssertTrue(app.staticTexts["weekProgress"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.staticTexts["weekProgress"].label, "1 of 3 done")
+        XCTAssertEqual(app.staticTexts["weekProgress"].label, "1 of 4 done")
 
         app.tabBars.buttons["History"].tap()
         XCTAssertTrue(app.staticTexts["Push 1"].waitForExistence(timeout: 5))

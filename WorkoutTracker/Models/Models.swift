@@ -193,11 +193,15 @@ final class RotationReset {
     var id: UUID = UUID()
     var date: Date = Date()
     var weekRaw: Int = 0
+    /// When set, the "weeks completed" count restarts from this number instead of carrying on.
+    /// Used when an upgrade re-anchors the rotation so the count isn't lost.
+    var weeksCompleted: Int?
 
-    init(date: Date, week: RotationWeek) {
+    init(date: Date, week: RotationWeek, weeksCompleted: Int? = nil) {
         self.id = UUID()
         self.date = date
         self.weekRaw = week.rawValue
+        self.weeksCompleted = weeksCompleted
     }
 
     var week: RotationWeek { RotationWeek(rawValue: weekRaw) ?? .a }

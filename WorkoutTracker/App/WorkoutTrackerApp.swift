@@ -16,7 +16,7 @@ struct WorkoutTrackerApp: App {
                 if !keepSettings { UserDefaults.standard.removeObject(forKey: AppAppearance.storageKey) }
                 try Seeder.seed(context: container.mainContext)
             } else {
-                try Seeder.seedIfNeeded(context: container.mainContext)
+                try Seeder.prepare(context: container.mainContext)
             }
         } catch {
             fatalError("Could not open the workout store: \(error)")

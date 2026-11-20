@@ -42,16 +42,16 @@ struct SeedAndSessionTests {
 
     // MARK: Seed
 
-    @Test func seedsAllFiveWorkoutsFromNotion() throws {
+    @Test func seedsAllSixWorkoutsFromNotion() throws {
         let all = try templates()
-        #expect(all.map(\.name) == ["Push 1", "Pull 1", "Push 2", "Pull 2", "Legs"])
-        #expect(all.map(\.exercises.count) == [5, 5, 5, 5, 6])
+        #expect(all.map(\.name) == ["Push 1", "Pull 1", "Push 2", "Pull 2", "Legs", "Pancake"])
+        #expect(all.map(\.exercises.count) == [5, 5, 5, 5, 6, 5])
     }
 
     @Test func weekMembershipMatchesRequestedRotation() throws {
         let all = try templates()
-        #expect(all.filter(\.inWeekA).map(\.name) == ["Push 1", "Pull 1", "Legs"])
-        #expect(all.filter(\.inWeekB).map(\.name) == ["Push 2", "Pull 2", "Legs"])
+        #expect(all.filter(\.inWeekA).map(\.name) == ["Push 1", "Pull 1", "Legs", "Pancake"])
+        #expect(all.filter(\.inWeekB).map(\.name) == ["Push 2", "Pull 2", "Legs", "Pancake"])
     }
 
     @Test func seededExerciseDetailsMatchNotion() throws {
@@ -99,7 +99,7 @@ struct SeedAndSessionTests {
         let defaults = try #require(UserDefaults(suiteName: "test-\(UUID())"))
         try Seeder.seedIfNeeded(context: fresh.mainContext, defaults: defaults)
         try Seeder.seedIfNeeded(context: fresh.mainContext, defaults: defaults)
-        #expect(try fresh.mainContext.fetchCount(FetchDescriptor<WorkoutTemplate>()) == 5)
+        #expect(try fresh.mainContext.fetchCount(FetchDescriptor<WorkoutTemplate>()) == 6)
     }
 
     @Test func importedSessionsDoNotMoveRotation() throws {
@@ -139,7 +139,7 @@ struct SeedAndSessionTests {
     @Test func finishedSessionCountsTowardRotation() throws {
         let all = try templates()
         let engine = RotationEngine(templates: all)
-        for name in ["Push 1", "Legs", "Pull 1"] {
+        for name in ["Push 1", "Legs", "Pancake", "Pull 1"] {
             let session = SessionFactory.start(try template(name), at: now, context: context)
             SessionFactory.finish(session, at: now.addingTimeInterval(Double(name.count) * 60))
         }
@@ -205,6 +205,8 @@ struct SeedAndSessionTests {
         #expect(Format.values([35, 35], unit: .seconds) == "35s, 35s")
         #expect(Format.prescription(sets: "3-4", target: "6-9", unit: .reps, perSide: true) == "3-4 × 6-9 L&R")
         #expect(Format.prescription(sets: "3-4", target: "30-90", unit: .seconds, perSide: false) == "3-4 × 30-90s")
+        #expect(Format.prescription(sets: "", target: "", unit: .seconds, perSide: false) == "")
+        #expect(Format.prescription(sets: "3", target: "", unit: .reps, perSide: false) == "3 sets")
     }
 }
 

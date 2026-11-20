@@ -137,9 +137,11 @@ enum Format {
     }
 
     /// "3-4 × 8-10 L&R" style prescription line.
+    /// Empty when neither sets nor target is written (e.g. "Rolling the feet").
     static func prescription(sets: String, target: String, unit: MeasureUnit, perSide: Bool) -> String {
-        var line = sets.isEmpty ? target : "\(sets) × \(target)"
-        if unit == .seconds, target.allSatisfy({ $0.isNumber || $0 == "-" }) { line += "s" }
+        guard !sets.isEmpty || !target.isEmpty else { return perSide ? "L&R" : "" }
+        var line = target.isEmpty ? "\(sets) sets" : (sets.isEmpty ? target : "\(sets) × \(target)")
+        if unit == .seconds, !target.isEmpty, target.allSatisfy({ $0.isNumber || $0 == "-" }) { line += "s" }
         if perSide { line += " L&R" }
         return line
     }

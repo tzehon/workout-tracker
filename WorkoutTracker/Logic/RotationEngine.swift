@@ -14,7 +14,8 @@ enum RotationWeek: Int, Codable, CaseIterable, Identifiable, Sendable {
 struct RotationEvent: Equatable, Sendable {
     enum Kind: Equatable, Sendable {
         case completed(templateID: UUID)
-        case reset(to: RotationWeek)
+        /// `weeksCompleted`, when set, replaces the running count of finished weeks.
+        case reset(to: RotationWeek, weeksCompleted: Int? = nil)
     }
 
     var date: Date
@@ -27,6 +28,9 @@ struct RotationState: Equatable, Sendable {
     var completed: Set<UUID> = []
     /// How many full weeks have been finished since the start (or last reset).
     var weeksCompleted: Int = 0
+    /// When the current week began: the event that finished the previous week, or the last
+    /// reset. `nil` while still in the very first week.
+    var weekStartedAt: Date?
 }
 
 /// Sequence-based rotation: a week only ends once every workout in it has been finished,
@@ -48,8 +52,9 @@ struct RotationEngine: Sendable {
         var state = RotationState()
         for event in events.sorted(by: { $0.date < $1.date }) {
             switch event.kind {
-            case .reset(let week):
-                state = RotationState(week: week, completed: [], weeksCompleted: state.weeksCompleted)
+            case .reset(let week, let weeksCompleted):
+                state = RotationState(week: week, completed: [], weeksCompleted: weeksCompleted ?? state.weeksCompleted,
+                                      weekStartedAt: event.date)
             case .completed(let id):
                 let members = members(of: state.week)
                 guard members.contains(id), !state.completed.contains(id) else { continue }
@@ -58,6 +63,7 @@ struct RotationEngine: Sendable {
                     state.week = state.week.next
                     state.completed = []
                     state.weeksCompleted += 1
+                    state.weekStartedAt = event.date
                 }
             }
         }
@@ -86,6 +92,8 @@ extension RotationEngine {
             guard !session.isImported, let finished = session.finishedAt, let id = session.templateID else { return nil }
             return RotationEvent(date: finished, kind: .completed(templateID: id))
         }
-        return completions + resets.map { RotationEvent(date: $0.date, kind: .reset(to: $0.week)) }
+        return completions + resets.map {
+            RotationEvent(date: $0.date, kind: .reset(to: $0.week, weeksCompleted: $0.weeksCompleted))
+        }
     }
 }

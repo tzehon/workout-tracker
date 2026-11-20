@@ -1,7 +1,8 @@
 import SwiftUI
+import UIKit
 
 enum Theme {
-    static let colorNames = ["blue", "green", "purple", "orange", "red", "pink", "teal", "indigo"]
+    static let colorNames = ["blue", "green", "purple", "orange", "red", "pink", "teal", "indigo", "yellow"]
 
     static func color(_ name: String) -> Color {
         switch name {
@@ -12,9 +13,18 @@ enum Theme {
         case "pink": .pink
         case "teal": .teal
         case "indigo": .indigo
+        case "yellow": yellow
         default: .blue
         }
     }
+
+    /// System yellow is too pale for text and white button labels on a light background,
+    /// so light mode uses a deeper mustard. Dark mode keeps the system yellow.
+    private static let yellow = Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? .systemYellow
+            : UIColor(red: 0.78, green: 0.56, blue: 0.0, alpha: 1)
+    })
 }
 
 /// In-app appearance override. `.system` follows the phone's light/dark setting.
@@ -79,8 +89,10 @@ struct PrescriptionDetails: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(Format.prescription(sets: sets, target: target, unit: unit, perSide: perSide))
-                .font(.subheadline.weight(.medium))
+            let line = Format.prescription(sets: sets, target: target, unit: unit, perSide: perSide)
+            if !line.isEmpty {
+                Text(line).font(.subheadline.weight(.medium))
+            }
             let details = [
                 rest.isEmpty ? nil : "Rest \(rest)",
                 tempo.isEmpty ? nil : "Tempo \(tempo)",
