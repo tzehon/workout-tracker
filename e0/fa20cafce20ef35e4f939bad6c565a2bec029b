@@ -1,0 +1,25 @@
+AGENTS.md
+  s_7cefc06a14494e::t_2eb3b3f8c5582b 9-10,36-37,58-73,106-108,123-124
+README.md
+  s_7cefc06a14494e::t_202eb7f730832d 7-8,15,18-19,21-25
+docs/architecture.md
+  s_7cefc06a14494e::t_a6dc5e46668de1 10-11,13-15,29,36,39,50-53,71-72,82-95,97,120,132,145-152,163,165,176,179-180,210-234,240,242-247
+docs/setup.md
+  s_7cefc06a14494e::t_f7a60bcba58907 42-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e0fa20cafce20ef35e4f939bad6c565a2bec029b",
+  "prompts": {},
+  "sessions": {
+    "s_7cefc06a14494e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4467a556-f636-4de9-8386-526c12010627",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "tth <xyz@foo.com>"
+    }
+  }
+}
