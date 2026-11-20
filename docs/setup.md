@@ -39,6 +39,9 @@ Pick another simulator with `make test SIM="iPhone 17"`. The destination OS is p
 - Stored locally with SwiftData (`default.store` in the app's Application Support). Nothing syncs.
 - On first launch the Notion program and its Progression history are seeded once. A
   `UserDefaults` flag (`didSeedProgram.v1`) stops it from re-seeding if you later delete workouts.
+- Installs from before Pancake get it added once on the next launch (`didAddPancake.v1`), keeping
+  your current week and what's done in it. Every launch also links any exercise not yet in the
+  exercise library.
 - Deleting the app deletes all logged data.
 - UI tests launch with `-UITestReset`, which uses a fresh in-memory store and doesn't touch real data.
 

@@ -6,7 +6,8 @@ Guidance for coding agents working in this repo. Human-facing docs: [README.md](
 ## What this is
 
 A personal iOS app (SwiftUI + SwiftData, iOS 18+, Swift 6) for a rings program that
-alternates **Week A** (Push 1 / Pull 1 / Legs) and **Week B** (Push 2 / Pull 2 / Legs).
+alternates **Week A** (Push 1 / Pull 1 / Legs / Pancake) and **Week B** (Push 2 / Pull 2 / Legs / Pancake).
+Pancake and Legs are in both weeks, and each week needs its own.
 The program and its past numbers come from the Notion page "Training / Week 1" and are
 hard-coded in `WorkoutTracker/Seed/SeedProgram.swift`. No dependencies and no network.
 
@@ -32,7 +33,8 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 |------|----------|
 | `WorkoutTracker/Models/Models.swift` | All SwiftData `@Model` types + `AppSchema` |
 | `WorkoutTracker/Logic/RotationEngine.swift` | Pure A/B week rotation (no SwiftData fetches) |
-| `WorkoutTracker/Logic/SessionLogic.swift` | `SessionFactory`, `PerformanceLookup`, `ProgressSeries`, `Format` |
+| `WorkoutTracker/Logic/SessionLogic.swift` | `SessionFactory` (incl. add/swap/remove exercise), `PerformanceLookup`, `ProgressSeries`, `Format` |
+| `WorkoutTracker/Logic/ExerciseLibrary.swift` | Linking exercises to the library, rename sync, adding library exercises to the program |
 | `WorkoutTracker/Seed/SeedProgram.swift` | Notion program data, `ProgressionParser`, `Seeder` |
 | `WorkoutTracker/Views/` | One file per screen + `Theme.swift` shared bits |
 | `WorkoutTrackerTests/` | Swift Testing (`@Test`, `#expect`) |
@@ -53,8 +55,22 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
   `"Self directed"` or `"1:30 after B2"` fit. Only `plannedSets` is numeric.
 - **`SetEntry.value == nil` means not logged.** Use `loggedValues` and never treat nil as 0.
 - **Seeding runs once**, guarded by the `UserDefaults` key `didSeedProgram.v1`. Changing
-  `SeedProgram` doesn't affect existing installs. Adding a model field needs a default value
-  (SwiftData lightweight migration) and must not wipe the store.
+  `SeedProgram` doesn't affect existing installs: add a one-off upgrade step to `Seeder.prepare`
+  with its own key, like `addPancakeIfNeeded` (`didAddPancake.v1`). Adding a model field needs a
+  default value (SwiftData lightweight migration) and must not wipe the store.
+- **Changing week membership rewrites the replayed past.** The rotation replays all history with
+  today's membership, so adding a workout to a week makes past weeks unfinished. An upgrade that
+  does this must insert a `RotationReset` just after `state.weekStartedAt`, carrying `weeksCompleted`
+  (see `addPancakeIfNeeded`).
+- **Every exercise has a library entry.** `ExerciseTemplate.libraryID` and
+  `SessionExercise.libraryID` are soft links to `LibraryExercise`. Name, unit and per-side belong to
+  the library and are synced onto program slots (`ExerciseLibrary.sync`); the prescription is per
+  slot. `ExerciseLibrary.linkUnlinked` runs on every launch and links anything missing by name.
+  Progress charts are keyed by `libraryID`.
+- **Session edits are session-only.** Add/swap/remove in `SessionView` never touch the program.
+  A swap clears `exerciseTemplateID` (it's no longer that slot) and replaces the set rows.
+- **Program tab navigation is value-based only** (`ProgramRoute`, model values). A
+  `NavigationLink { destination }` there makes SwiftUI push value routes underneath it.
 - **Deleting a model shown on screen:** delete it in `.onDisappear` after `dismiss()` (see
   `SessionView`), or SwiftData can crash reading the deleted object.
 - **Number entry uses a `String` binding proxy** (`SetRow.text`) so each keystroke saves. A
@@ -87,7 +103,9 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 - Logic changes go in `Logic/` with unit tests. Keep views thin.
 - New UI flows get an XCUITest. Add `accessibilityIdentifier`s rather than matching on text.
   Existing ids: `workoutRow-<name>`, `nextWeekRow-<name>`, `startWorkout`, `finishWorkout`,
-  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`.
+  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`, `exerciseMenu-<exerciseOrder>`,
+  `swapExercise`, `removeExercise`, `addExerciseToSession`, `addProgramExercise`, `exerciseLibrary`,
+  `libraryRow-<name>`, `libraryName`, `newLibraryExercise`, `libraryPickerRow-<name>`, `libraryPickerCreate`.
 - UI tests launch with `-UITestReset`, which gives an in-memory, freshly seeded store and resets
   settings. Add `-UITestKeepSettings` to keep settings across a relaunch.
 
@@ -102,3 +120,5 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 - Notion progression lines were imported oldest-first, dated one week apart before first
   launch. Not confirmed by the user.
 - The user explicitly declined a rest timer for v1.
+- Pancake A1/A2 rest is "100s" as written in Notion. Rolling the feet has no sets or reps in
+  Notion, so it starts with one optional timed row.
