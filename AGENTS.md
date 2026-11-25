@@ -24,8 +24,9 @@ make icons         # redraw the light/dark/tinted app icons from scripts/make-ic
 make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release workflow publishes)
 ```
 
-- Default destination: `iPhone 17 Pro`, iOS 26.5. Override with `SIM="iPhone 17"`, `OS=26.4`, or a
-  full `DEST=...`. `scripts/ci-destination.sh` prints one for the newest installed runtime.
+- Default destination: `iPhone 17 Pro` on the newest installed iOS (`OS=latest`). Override with
+  `SIM="iPhone 17"`, `OS=27.2`, or a full `DEST=...`. `scripts/ci-destination.sh` prints one for
+  the newest installed runtime. Don't run UI tests on iPhone Duo: its folding screen breaks them.
 - CI is `.github/workflows/ci.yml`: unit + UI tests on every push to main and every PR, and
   `v*` tags publish an unsigned `.ipa` as a GitHub Release. Keep `make` targets as the single
   source of build commands, so CI and local runs match.

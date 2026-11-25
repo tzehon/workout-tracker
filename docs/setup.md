@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- macOS with Xcode 26 or newer (tested with Xcode 27.2, iOS 26.5 simulator)
+- macOS with Xcode 26 or newer (tested with Xcode 27.2, iPhone 17 Pro on iOS 27.2)
 - [XcodeGen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
 - iOS 18.0+ on the device
 
@@ -23,7 +23,8 @@ The Xcode project is **generated** from `project.yml` and is not committed. Run
 | `make ipa VERSION=1.1` | Unsigned Release build packaged as `build/WorkoutTracker-1.1-unsigned.ipa` |
 | `make clean` | Remove `build/` and the generated project |
 
-Pick another simulator with `make test SIM="iPhone 17"` or another runtime with `OS=26.4`.
+Tests run on an iPhone 17 Pro simulator on the newest iOS you have installed. Pick another
+simulator with `make test SIM="iPhone 17"` or a specific runtime with `OS=27.2`.
 `DEST` overrides the whole destination, e.g. `make test DEST="$(scripts/ci-destination.sh)"`
 picks an iPhone on the newest runtime you have installed.
 

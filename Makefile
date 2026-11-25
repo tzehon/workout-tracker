@@ -1,5 +1,6 @@
 SIM ?= iPhone 17 Pro
-OS ?= 26.5
+# "latest" is the newest installed iOS runtime that has $(SIM).
+OS ?= latest
 # CI sets DEST to whichever simulator the runner has (scripts/ci-destination.sh).
 DEST ?= platform=iOS Simulator,name=$(SIM),OS=$(OS)
 DERIVED = build/DerivedData
