@@ -22,6 +22,10 @@ final class WorkoutTemplate {
     var colorName: String = "blue"
     var inWeekA: Bool = false
     var inWeekB: Bool = false
+    /// Position on Today within Week A / Week B, set by reordering there. `nil` until the week
+    /// is reordered (or for a workout added to the week since), which falls back to `order`.
+    var weekAPosition: Int?
+    var weekBPosition: Int?
     @Relationship(deleteRule: .cascade, inverse: \ExerciseTemplate.workout)
     var exercises: [ExerciseTemplate] = []
 
@@ -37,6 +41,12 @@ final class WorkoutTemplate {
     var sortedExercises: [ExerciseTemplate] { exercises.sorted { $0.order < $1.order } }
 
     func isIn(_ week: RotationWeek) -> Bool { week == .a ? inWeekA : inWeekB }
+
+    func position(in week: RotationWeek) -> Int? { week == .a ? weekAPosition : weekBPosition }
+
+    func setPosition(_ position: Int?, in week: RotationWeek) {
+        if week == .a { weekAPosition = position } else { weekBPosition = position }
+    }
 }
 
 /// One exercise prescription inside a workout, mirroring a row of the Notion table.

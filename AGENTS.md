@@ -38,6 +38,7 @@ make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release work
 |------|----------|
 | `WorkoutTracker/Models/Models.swift` | All SwiftData `@Model` types + `AppSchema` |
 | `WorkoutTracker/Logic/RotationEngine.swift` | Pure A/B week rotation (no SwiftData fetches) |
+| `WorkoutTracker/Logic/WeekOrder.swift` | Per-week order of workouts on Today (`weekAPosition` / `weekBPosition`) |
 | `WorkoutTracker/Logic/SessionLogic.swift` | `SessionFactory` (incl. add/swap/remove exercise), `PerformanceLookup`, `ProgressSeries`, `Format` |
 | `WorkoutTracker/Logic/ExerciseLibrary.swift` | Linking exercises to the library, rename sync, adding library exercises to the program |
 | `WorkoutTracker/Seed/SeedProgram.swift` | Notion program data, `ProgressionParser`, `Seeder` |
@@ -53,6 +54,9 @@ make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release work
 - **The rotation is sequence-based, not calendar-based.** That was the user's explicit choice. A
   week ends only when all of its workouts are finished, in any order. Off-week and repeat
   workouts are logged but don't count.
+- **Each week has its own order.** Today's Reorder sets `weekAPosition` / `weekBPosition`
+  (nil → program `order`). Always list a week with `WeekOrder.members(of:in:)`. Order only
+  affects the list and "Up next", never the rotation, so it needs no `RotationReset`.
 - **Sessions snapshot their exercises.** `SessionExercise` copies name and prescription from
   `ExerciseTemplate` at start. Program edits must never change logged history. The links back
   (`templateID`, `exerciseTemplateID`) are soft UUIDs, not relationships.
@@ -110,7 +114,7 @@ make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release work
 - Logic changes go in `Logic/` with unit tests. Keep views thin.
 - New UI flows get an XCUITest. Add `accessibilityIdentifier`s rather than matching on text.
   Existing ids: `workoutRow-<name>`, `nextWeekRow-<name>`, `startWorkout`, `finishWorkout`,
-  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`, `exerciseMenu-<exerciseOrder>`,
+  `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`, `exerciseMenu-<exerciseOrder>`, `reorderWorkouts`,
   `swapExercise`, `removeExercise`, `addExerciseToSession`, `addProgramExercise`, `exerciseLibrary`,
   `libraryRow-<name>`, `libraryName`, `libraryCue`, `newLibraryExercise`, `libraryPickerRow-<name>`,
   `libraryPickerCreate`, `dismissKeyboard`.

@@ -12,6 +12,7 @@ struct TodayView: View {
     @Query(sort: \WorkoutSession.startedAt, order: .reverse) private var sessions: [WorkoutSession]
     @Query private var resets: [RotationReset]
     @State private var path: [Route] = []
+    @State private var editMode: EditMode = .inactive
     @AppStorage(AppAppearance.storageKey) private var appearance: AppAppearance = .system
 
     private var engine: RotationEngine { RotationEngine(templates: templates) }
@@ -19,12 +20,10 @@ struct TodayView: View {
         engine.state(for: RotationEngine.events(sessions: sessions, resets: resets))
     }
 
-    private func template(_ id: UUID) -> WorkoutTemplate? { templates.first { $0.id == id } }
-
     var body: some View {
         let state = state
-        let thisWeek = engine.members(of: state.week).compactMap(template)
-        let nextWeek = engine.members(of: state.week.next).compactMap(template)
+        let thisWeek = WeekOrder.members(of: state.week, in: templates)
+        let nextWeek = WeekOrder.members(of: state.week.next, in: templates)
         let nextUp = engine.nextUp(in: state)
         let inProgress = sessions.filter { !$0.isFinished }
 
@@ -62,6 +61,7 @@ struct TodayView: View {
                         }
                         .accessibilityIdentifier("workoutRow-\(workout.name)")
                     }
+                    .onMove { WeekOrder.move(in: state.week, templates: templates, from: $0, to: $1) }
                 }
 
                 Section {
@@ -71,12 +71,21 @@ struct TodayView: View {
                         }
                         .accessibilityIdentifier("nextWeekRow-\(workout.name)")
                     }
+                    .onMove { WeekOrder.move(in: state.week.next, templates: templates, from: $0, to: $1) }
                 } header: {
                     Text("Next: \(state.week.next.title)")
                 }
             }
+            .environment(\.editMode, $editMode)
             .navigationTitle("Today")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(editMode.isEditing ? "Done" : "Reorder") {
+                        withAnimation { editMode = editMode.isEditing ? .inactive : .active }
+                    }
+                    .fontWeight(editMode.isEditing ? .semibold : .regular)
+                    .accessibilityIdentifier("reorderWorkouts")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Section("Rotation") {

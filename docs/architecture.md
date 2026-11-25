@@ -7,12 +7,13 @@ WorkoutTracker/
   App/      WorkoutTrackerApp.swift   container, seeding, tab bar
   Models/   Models.swift              SwiftData @Model types
   Logic/    RotationEngine.swift      pure A/B week rotation
+            WeekOrder.swift           per-week order of workouts on Today
             SessionLogic.swift        start/finish sessions, add/swap/remove exercises, last performance, progress series, formatting
             ExerciseLibrary.swift     link exercises to the library, rename sync, add to program
   Seed/     SeedProgram.swift         Notion program data, progression parser, seeder
   Views/    Today, WorkoutPreview, Session, History, ProgressTab, Program, Library, Theme
-WorkoutTrackerTests/                  Swift Testing: rotation, seed, sessions, progress, library, Pancake upgrade
-WorkoutTrackerUITests/                XCUITest: end-to-end flow, session editing, appearance, screenshot capture
+WorkoutTrackerTests/                  Swift Testing: rotation, week order, seed, sessions, progress, library, Pancake upgrade
+WorkoutTrackerUITests/                XCUITest: end-to-end flow, reordering, session editing, appearance, screenshot capture
 ```
 
 ## Layers
@@ -78,6 +79,8 @@ erDiagram
         String colorName
         Bool inWeekA
         Bool inWeekB
+        Int weekAPosition "optional"
+        Int weekBPosition "optional"
     }
     LibraryExercise {
         UUID id
@@ -179,6 +182,15 @@ stateDiagram-v2
 Legs and Pancake are in both weeks, and each week needs its own session of each.
 `RotationState.weekStartedAt` records the event that began the current week.
 
+### Week order
+
+Each week has its own order, set with **Reorder** on Today (drag rows in "This week" or
+"Next"). `WeekOrder.members(of:in:)` sorts a week's workouts by `weekAPosition` /
+`weekBPosition`; workouts without a position (an untouched week, or one added to the week
+later) follow in program `order`. The order only decides the list and "Up next"
+(`RotationEngine.nextUp`); the rotation treats each week as a set, so reordering never
+changes which week you're in or what's done.
+
 ## Logging a workout
 
 ```mermaid
@@ -237,12 +249,14 @@ slot sets the library defaults.
 
 | Suite | Covers |
 |-------|--------|
+| `WeekOrderTests` | defaults to program order, moving one week leaves the other alone, order is saved, "Up next" follows it, reordering doesn't change the rotation, a workout added later goes last |
 | `RotationEngineTests` | start state, partial weeks, flip after a full week, any order, week start date, reset carrying week count, full cycle, late weeks, off-week and repeat workouts, Legs per week, unsorted events, resets, empty program |
 | `AppearanceTests` | System doesn't override, Light/Dark map to colour schemes, stored raw values stay stable |
 | `SeedAndSessionTests` | progression parsing, seed matches Notion, week membership, imported sessions (values, order, dates), seed-once, imported sessions not moving rotation, session snapshots, add/remove sets, finish → rotation, last-performance rules, progress merging, formatting |
 | `PancakeTests` | Pancake matches Notion, week needs Pancake, upgrade keeps your place (mid-cycle and first week), upgrade runs once and respects deletion |
 | `ExerciseLibraryTests` | one entry per name, idempotent linking, defaults from first slot, linking older stores, create dedupes, rename flows to program not history, add/swap/remove in a session, swapped exercise charts with library history |
 | `WorkoutFlowUITests` | Today starts on Week A with Pancake; logging Push 1 moves to "1 of 4 done" and shows in History; imported progression is charted |
+| `ReorderUITests` | dragging Legs above Pull 1 moves the row and the summary line, next week unchanged |
 | `SessionEditingUITests` | swap in a session (shows library history), swap with logged sets asks first, remove + add leaves the program unchanged, create an exercise from the picker |
 | `LibraryUITests` | renaming in the library updates the program |
 | `AppearanceUITests` | Dark / Light / System change the screen (measured by screenshot brightness); the choice survives a relaunch |

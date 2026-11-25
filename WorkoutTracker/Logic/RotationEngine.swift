@@ -70,7 +70,7 @@ struct RotationEngine: Sendable {
         return state
     }
 
-    /// Workouts still to do this week, in program order.
+    /// Workouts still to do this week, in the week's order.
     func remaining(in state: RotationState) -> [UUID] {
         members(of: state.week).filter { !state.completed.contains($0) }
     }
@@ -80,10 +80,10 @@ struct RotationEngine: Sendable {
 }
 
 extension RotationEngine {
-    /// Builds the engine from the program's templates (ordered by `order`).
+    /// Builds the engine from the program's templates, each week in its own order (`WeekOrder`).
     init(templates: [WorkoutTemplate]) {
-        let sorted = templates.sorted { $0.order < $1.order }
-        self.init(weekA: sorted.filter(\.inWeekA).map(\.id), weekB: sorted.filter(\.inWeekB).map(\.id))
+        self.init(weekA: WeekOrder.members(of: .a, in: templates).map(\.id),
+                  weekB: WeekOrder.members(of: .b, in: templates).map(\.id))
     }
 
     /// Rotation events from finished, non-imported sessions plus manual resets.
