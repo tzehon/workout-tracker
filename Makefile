@@ -7,7 +7,7 @@ DERIVED = build/DerivedData
 # Extra xcodebuild flags, e.g. XCODEBUILD_FLAGS="-resultBundlePath build/unit.xcresult".
 XCODEBUILD_FLAGS ?=
 
-.PHONY: project build test unit-test ui-test screenshots icons ipa clean
+.PHONY: project build test unit-test ui-test screenshots icons ipa testflight clean
 
 project:
 	xcodegen generate --quiet
@@ -37,6 +37,18 @@ ipa: project
 	cp -R $(DERIVED)/Build/Products/Release-iphoneos/WorkoutTracker.app build/ipa/Payload/
 	cd build/ipa && zip -qry ../$(notdir $(IPA)) Payload
 	@echo "Built $(IPA)"
+
+# Signed Release build uploaded to TestFlight as Internal Only. Needs Xcode signed in to the team
+# in project.yml. Each upload needs a higher build number, so it defaults to the current time.
+ifndef TESTFLIGHT_BUILD
+TESTFLIGHT_BUILD := $(shell date +%Y%m%d%H%M)
+endif
+ARCHIVE = build/WorkoutTracker.xcarchive
+testflight: project
+	rm -rf $(ARCHIVE) build/testflight
+	xcodebuild -project WorkoutTracker.xcodeproj -scheme WorkoutTracker -configuration Release -destination 'generic/platform=iOS' -derivedDataPath build/DerivedData-archive -archivePath $(ARCHIVE) -allowProvisioningUpdates CURRENT_PROJECT_VERSION=$(TESTFLIGHT_BUILD) archive -quiet
+	xcodebuild -exportArchive -archivePath $(ARCHIVE) -exportOptionsPlist scripts/testflight-export.plist -exportPath build/testflight -allowProvisioningUpdates -quiet
+	@echo "Uploaded build $(TESTFLIGHT_BUILD) to TestFlight. It shows up after processing (5-15 min)."
 
 SHOTS ?= $(CURDIR)/build/screenshots
 screenshots: project

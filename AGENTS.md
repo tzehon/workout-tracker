@@ -22,6 +22,7 @@ make test          # everything — must pass before every commit
 make screenshots   # PNGs of the main screens → build/screenshots/ (useful to eyeball UI changes)
 make icons         # redraw the light/dark/tinted app icons from scripts/make-icon.swift
 make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release workflow publishes)
+make testflight        # signed build uploaded to TestFlight (Internal Only). Uploads, so only when asked
 ```
 
 - Default destination: `iPhone 17 Pro` on the newest installed iOS (`OS=latest`). Override with
