@@ -31,4 +31,22 @@ final class LibraryUITests: XCTestCase {
         app.staticTexts["Push 1"].tap()
         XCTAssertTrue(app.staticTexts["Ring Fly"].waitForExistence(timeout: 5))
     }
+
+    /// Multi-line fields use Return for new lines, so the keyboard needs its own close button.
+    @MainActor
+    func testKeyboardCanBeHidden() {
+        launchApp()
+        app.tabBars.buttons["Program"].tap()
+        app.buttons["exerciseLibrary"].tap()
+        let row = app.buttons["libraryRow-Chest Fly"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
+        let cue = app.descendants(matching: .any)["libraryCue"].firstMatch
+        XCTAssertTrue(cue.waitForExistence(timeout: 3))
+        cue.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 3))
+
+        app.buttons["dismissKeyboard"].tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 3))
+    }
 }

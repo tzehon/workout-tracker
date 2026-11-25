@@ -80,6 +80,8 @@ make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release work
   `SessionView`), or SwiftData can crash reading the deleted object.
 - **Number entry uses a `String` binding proxy** (`SetRow.text`) so each keystroke saves. A
   `TextField(value:format:)` only commits on return, so values typed before "Finish" were lost.
+- **Every screen with text fields gets `.keyboardDismissButton()`** (`Theme.swift`). Multi-line
+  fields use Return for new lines, so without it the keyboard can't be closed.
 
 ## Swift / concurrency
 
@@ -110,7 +112,8 @@ make ipa VERSION=1.1   # unsigned Release .ipa → build/ (what the release work
   Existing ids: `workoutRow-<name>`, `nextWeekRow-<name>`, `startWorkout`, `finishWorkout`,
   `setField-<exerciseOrder>-<setIndex>`, `weekProgress`, `todayOptions`, `exerciseMenu-<exerciseOrder>`,
   `swapExercise`, `removeExercise`, `addExerciseToSession`, `addProgramExercise`, `exerciseLibrary`,
-  `libraryRow-<name>`, `libraryName`, `newLibraryExercise`, `libraryPickerRow-<name>`, `libraryPickerCreate`.
+  `libraryRow-<name>`, `libraryName`, `libraryCue`, `newLibraryExercise`, `libraryPickerRow-<name>`,
+  `libraryPickerCreate`, `dismissKeyboard`.
 - UI tests launch with `-UITestReset`, which gives an in-memory, freshly seeded store and resets
   settings. Add `-UITestKeepSettings` to keep settings across a relaunch.
 

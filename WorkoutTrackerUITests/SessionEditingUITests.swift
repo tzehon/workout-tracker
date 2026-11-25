@@ -57,7 +57,7 @@ final class SessionEditingUITests: XCTestCase {
         let field = app.textFields["setField-0-0"]
         field.tap()
         field.typeText("9")
-        app.buttons["Done"].firstMatch.tap()
+        app.buttons["dismissKeyboard"].firstMatch.tap()
 
         app.buttons["exerciseMenu-0"].tap()
         app.buttons["swapExercise"].tap()

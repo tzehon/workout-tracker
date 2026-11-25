@@ -30,7 +30,7 @@ final class ScreenshotTests: XCTestCase {
         field.tap()
         field.typeText("10")
         shot("3-logging")
-        app.buttons["Done"].firstMatch.tap()
+        app.buttons["dismissKeyboard"].firstMatch.tap()
         app.buttons["finishWorkout"].tap()
 
         app.tabBars.buttons["History"].tap()

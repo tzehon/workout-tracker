@@ -58,7 +58,7 @@ struct SessionView: View {
                 }
             }
         }
-        .scrollDismissesKeyboard(.interactively)
+        .keyboardDismissButton()
         .navigationTitle(session.templateName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -83,10 +83,6 @@ struct SessionView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
-            }
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Done") { focused = nil }
             }
         }
         .confirmationDialog(

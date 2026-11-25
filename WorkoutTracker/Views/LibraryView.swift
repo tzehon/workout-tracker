@@ -109,6 +109,7 @@ struct LibraryEditView: View {
                 }
                 Toggle("Each side (L&R)", isOn: $entry.perSide)
                 TextField("Coaching cue", text: $entry.cue, axis: .vertical)
+                    .accessibilityIdentifier("libraryCue")
                 TextField("Notes", text: $entry.notes, axis: .vertical)
             }
             Section {
@@ -148,6 +149,7 @@ struct LibraryEditView: View {
         }
         .navigationTitle(entry.name.isEmpty ? "Exercise" : entry.name)
         .navigationBarTitleDisplayMode(.inline)
+        .keyboardDismissButton()
         .onChange(of: entry.name) { sync() }
         .onChange(of: entry.unitRaw) { sync() }
         .onChange(of: entry.perSide) { sync() }

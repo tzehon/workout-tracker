@@ -110,6 +110,25 @@ struct PrescriptionDetails: View {
     }
 }
 
+extension View {
+    /// A hide-keyboard button above the keyboard, plus drag-to-dismiss on scroll. Multi-line
+    /// fields (cue, notes) use Return for new lines, so without this the keyboard can't be closed.
+    func keyboardDismissButton() -> some View {
+        scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Hide Keyboard", systemImage: "keyboard.chevron.compact.down") {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+                        )
+                    }
+                    .accessibilityIdentifier("dismissKeyboard")
+                }
+            }
+    }
+}
+
 /// "1 exercise", "3 exercises".
 func plural(_ count: Int, _ noun: String) -> String {
     "\(count) \(noun)\(count == 1 ? "" : "s")"

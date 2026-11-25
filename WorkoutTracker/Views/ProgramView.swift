@@ -139,6 +139,7 @@ struct TemplateEditView: View {
         }
         .navigationTitle(workout.name)
         .toolbar { EditButton() }
+        .keyboardDismissButton()
         .sheet(isPresented: $picking) {
             LibraryPicker(title: "Add to \(workout.name)") { ExerciseLibrary.add($0, to: workout) }
         }
@@ -211,6 +212,7 @@ struct ExerciseEditView: View {
         }
         .navigationTitle(exercise.name)
         .navigationBarTitleDisplayMode(.inline)
+        .keyboardDismissButton()
         .sheet(isPresented: $picking) {
             LibraryPicker(title: "Change Exercise", excluding: exercise.libraryID) { exercise.apply($0) }
         }
