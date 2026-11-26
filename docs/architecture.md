@@ -12,7 +12,7 @@ WorkoutTracker/
             ExerciseLibrary.swift     link exercises to the library, rename sync, add to program
   Seed/     SeedProgram.swift         Notion program data, progression parser, seeder
   Views/    Today, WorkoutPreview, Session, History, ProgressTab, Program, Library, Theme
-WorkoutTrackerTests/                  Swift Testing: rotation, week order, seed, sessions, progress, library, Pancake upgrade
+WorkoutTrackerTests/                  Swift Testing: rotation, week order, seed, sessions, progress, library, Flexibility + Pancake upgrade
 WorkoutTrackerUITests/                XCUITest: end-to-end flow, reordering, session editing, appearance, screenshot capture
 ```
 
@@ -163,9 +163,9 @@ editing a session always gives a consistent answer.
 stateDiagram-v2
     [*] --> WeekA
     WeekA --> WeekA: finish a Week A workout (not yet done)
-    WeekA --> WeekB: last of Push 1 / Pull 1 / Legs / Pancake finished
+    WeekA --> WeekB: last of Push 1 / Pull 1 / Legs / Flexibility 1 finished
     WeekB --> WeekB: finish a Week B workout (not yet done)
-    WeekB --> WeekA: last of Push 2 / Pull 2 / Legs / Pancake finished
+    WeekB --> WeekA: last of Push 2 / Pull 2 / Legs / Flexibility 2 finished
     WeekA --> WeekB: manual "Switch to Week B"
     WeekB --> WeekA: manual "Switch to Week A"
 ```
@@ -179,7 +179,7 @@ stateDiagram-v2
 | `RotationReset(week, weeksCompleted?)` | jump to that week with nothing done; optionally restart the week count |
 | Imported or unfinished session | not an event |
 
-Legs and Pancake are in both weeks, and each week needs its own session of each.
+Legs is in both weeks, and each week needs its own Legs session.
 `RotationState.weekStartedAt` records the event that began the current week.
 
 ### Week order
@@ -224,22 +224,26 @@ An unfinished session appears under **In progress** on Today, so closing the app
 ```mermaid
 flowchart TD
     Launch([App launch]) --> Seeded{didSeedProgram.v1?}
-    Seeded -- no --> Seed[seed: six workouts + imported progression, set both keys]
-    Seeded -- yes --> Pancake{didAddPancake.v1?}
+    Seeded -- no --> Seed[seed: seven workouts + imported progression, set both keys]
+    Seeded -- yes --> Flex{didReplacePancakeWithFlexibility.v1?}
     Seed --> Link
-    Pancake -- no --> Add[insert Pancake + RotationReset after weekStartedAt]
-    Pancake -- yes --> Link
-    Add --> Link[ExerciseLibrary.linkUnlinked]
+    Flex -- no --> Replace[insert Flexibility 1/2, delete Pancake + its library entries, RotationReset after weekStartedAt]
+    Flex -- yes --> Link
+    Replace --> Link[ExerciseLibrary.linkUnlinked]
 ```
 
-The seed inserts the six workouts from `SeedProgram` and turns each exercise's Notion progression
+The seed inserts the seven workouts from `SeedProgram` and turns each exercise's Notion progression
 lines into imported `WorkoutSession`s, one per line index per workout. Push 2 and Legs are the only
 workouts with progression data.
 
-Installs from before Pancake get it added once. Because the rotation is replayed with today's
-week membership, adding Pancake to both weeks would leave every past week unfinished and jump
-back. The upgrade computes the state first and records a `RotationReset` 1 ms after
-`weekStartedAt`, carrying `weeksCompleted`, so the current week and what's done in it stay the same.
+Installs from before Flexibility get Pancake (both weeks) replaced once by Flexibility 1 (Week A)
+and Flexibility 2 (Week B). Each takes Pancake's place in its week's order. Library entries that
+only Pancake used are deleted; Tailor's Pose is kept because Flexibility reuses it, and logged
+Pancake sessions stay in History. Because the rotation is replayed with today's week membership,
+changing a week's members would leave every past week unfinished and jump back. The upgrade
+computes the state first and records a `RotationReset` 1 ms after `weekStartedAt`, carrying
+`weeksCompleted`, so the current week and what's done in it stay the same (a Pancake done this
+week no longer counts, so that week still needs its Flexibility).
 
 `linkUnlinked` gives every program and logged exercise without a `libraryID` a library entry,
 matching by name (case-insensitive). Program exercises are visited in program order, so the first
@@ -253,9 +257,9 @@ slot sets the library defaults.
 | `RotationEngineTests` | start state, partial weeks, flip after a full week, any order, week start date, reset carrying week count, full cycle, late weeks, off-week and repeat workouts, Legs per week, unsorted events, resets, empty program |
 | `AppearanceTests` | System doesn't override, Light/Dark map to colour schemes, stored raw values stay stable |
 | `SeedAndSessionTests` | progression parsing, seed matches Notion, week membership, imported sessions (values, order, dates), seed-once, imported sessions not moving rotation, session snapshots, add/remove sets, finish → rotation, last-performance rules, progress merging, formatting |
-| `PancakeTests` | Pancake matches Notion, week needs Pancake, upgrade keeps your place (mid-cycle and first week), upgrade runs once and respects deletion |
+| `FlexibilityTests` | Flexibility 1/2 match Notion, shared exercises share a library entry, each week needs its own Flexibility, Pancake upgrade keeps your place (mid-cycle, Pancake done this week, first week), takes Pancake's place in each week's order, deletes Pancake and its library entries (keeping ones used elsewhere and history), runs once and respects deletion |
 | `ExerciseLibraryTests` | one entry per name, idempotent linking, defaults from first slot, linking older stores, create dedupes, rename flows to program not history, add/swap/remove in a session, swapped exercise charts with library history |
-| `WorkoutFlowUITests` | Today starts on Week A with Pancake; logging Push 1 moves to "1 of 4 done" and shows in History; imported progression is charted |
+| `WorkoutFlowUITests` | Today starts on Week A with Flexibility 1 (Flexibility 2 next week); logging Push 1 moves to "1 of 4 done" and shows in History; imported progression is charted |
 | `ReorderUITests` | dragging Legs above Pull 1 moves the row and the summary line, next week unchanged |
 | `SessionEditingUITests` | swap in a session (shows library history), swap with logged sets asks first, remove + add leaves the program unchanged, create an exercise from the picker |
 | `LibraryUITests` | renaming in the library updates the program |

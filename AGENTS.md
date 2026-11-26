@@ -6,10 +6,10 @@ Guidance for coding agents working in this repo. Human-facing docs: [README.md](
 ## What this is
 
 A personal iOS app (SwiftUI + SwiftData, iOS 18+, Swift 6) for a rings program that
-alternates **Week A** (Push 1 / Pull 1 / Legs / Pancake) and **Week B** (Push 2 / Pull 2 / Legs / Pancake).
-Pancake and Legs are in both weeks, and each week needs its own.
-The program and its past numbers come from the Notion page "Training / Week 1" and are
-hard-coded in `WorkoutTracker/Seed/SeedProgram.swift`. No dependencies and no network.
+alternates **Week A** (Push 1 / Pull 1 / Legs / Flexibility 1) and **Week B** (Push 2 / Pull 2 / Legs / Flexibility 2).
+Legs is in both weeks, and each week needs its own.
+The program and its past numbers come from the Notion page "Training / Week 1" (Flexibility 1/2
+are Day A/B of "Flexibility Level 2" on "Training / Press Week 1") and are hard-coded in `WorkoutTracker/Seed/SeedProgram.swift`. No dependencies and no network.
 
 ## Commands
 
@@ -67,12 +67,12 @@ make testflight        # signed build uploaded to TestFlight (Internal Only). Up
 - **`SetEntry.value == nil` means not logged.** Use `loggedValues` and never treat nil as 0.
 - **Seeding runs once**, guarded by the `UserDefaults` key `didSeedProgram.v1`. Changing
   `SeedProgram` doesn't affect existing installs: add a one-off upgrade step to `Seeder.prepare`
-  with its own key, like `addPancakeIfNeeded` (`didAddPancake.v1`). Adding a model field needs a
+  with its own key, like `replacePancakeIfNeeded` (`didReplacePancakeWithFlexibility.v1`). Adding a model field needs a
   default value (SwiftData lightweight migration) and must not wipe the store.
 - **Changing week membership rewrites the replayed past.** The rotation replays all history with
   today's membership, so adding a workout to a week makes past weeks unfinished. An upgrade that
   does this must insert a `RotationReset` just after `state.weekStartedAt`, carrying `weeksCompleted`
-  (see `addPancakeIfNeeded`).
+  (see `replacePancakeIfNeeded`).
 - **Every exercise has a library entry.** `ExerciseTemplate.libraryID` and
   `SessionExercise.libraryID` are soft links to `LibraryExercise`. Name, unit and per-side belong to
   the library and are synced onto program slots (`ExerciseLibrary.sync`); the prescription is per
@@ -134,5 +134,6 @@ make testflight        # signed build uploaded to TestFlight (Internal Only). Up
 - Notion progression lines were imported oldest-first, dated one week apart before first
   launch. Not confirmed by the user.
 - The user explicitly declined a rest timer for v1.
-- Pancake A1/A2 rest is "100s" as written in Notion. Rolling the feet has no sets or reps in
-  Notion, so it starts with one optional timed row.
+- Flexibility rest and tempo are blank, as in Notion (the user chose that). Tailor's Pose logs
+  contractions and the B1 "Isometric + Lifts" log lifts; the 10s holds are in the cue.
+  Single Leg Calf Stretch and Side Leg Lifts are per side.

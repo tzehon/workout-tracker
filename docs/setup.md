@@ -70,8 +70,10 @@ repository secrets, so for now it runs locally.
 - Stored locally with SwiftData (`default.store` in the app's Application Support). Nothing syncs.
 - On first launch the Notion program and its Progression history are seeded once. A
   `UserDefaults` flag (`didSeedProgram.v1`) stops it from re-seeding if you later delete workouts.
-- Installs from before Pancake get it added once on the next launch (`didAddPancake.v1`), keeping
-  your current week and what's done in it. Every launch also links any exercise not yet in the
+- Installs from before Flexibility get Pancake replaced once on the next launch
+  (`didReplacePancakeWithFlexibility.v1`): Pancake and the library exercises only it used are
+  deleted (logged Pancake sessions stay in History), Flexibility 1/2 take its place, and your
+  current week and what's done in it are kept. Every launch also links any exercise not yet in the
   exercise library.
 - Deleting the app deletes all logged data.
 - UI tests launch with `-UITestReset`, which uses a fresh in-memory store and doesn't touch real data.
