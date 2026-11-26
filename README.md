@@ -6,10 +6,11 @@ A personal iOS app for a gymnastic-rings program that alternates two weeks:
 
 | Week | Workouts |
 |------|----------|
-| **A** | Push 1 · Pull 1 · Legs · Pancake |
-| **B** | Push 2 · Pull 2 · Legs · Pancake |
+| **A** | Push 1 · Pull 1 · Legs · Flexibility 1 |
+| **B** | Push 2 · Pull 2 · Legs · Flexibility 2 |
 
-…then repeats. The program comes from the Notion page **Training / Week 1**.
+…then repeats. The program comes from the Notion page **Training / Week 1**, and Flexibility 1/2
+from Day A/B of the flexibility table in **Training / Press**.
 
 ## Features
 
