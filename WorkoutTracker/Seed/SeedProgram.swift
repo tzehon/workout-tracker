@@ -1,8 +1,8 @@
 import Foundation
 import SwiftData
 
-/// The program as written in the Notion "Week 1" page (Training / Training), Nov 2026,
-/// including the Pancake table.
+/// The program as written in the Notion "Week 1" page (Training / Training), Nov 2026, plus
+/// Flexibility 1/2 from the "Press Week 1" page (Training / Press).
 /// `progression` holds the Notion "Progression" lines, oldest first; each line becomes an
 /// imported past session.
 enum SeedProgram {
@@ -78,19 +78,25 @@ enum SeedProgram {
             Exercise(name: "Bent Leg Calf Raise", group: "E1", sets: "3-4", target: "12-40", rest: "1:00-1:30",
                      tempo: "21X1", progression: ["15,15,15"]),
         ]),
-        // Added to Notion Nov 2026. Every week, and it counts toward finishing the week.
-        Workout(name: "Pancake", color: "yellow", weekA: true, weekB: true, exercises: [
-            Exercise(name: "Rolling the feet", group: "A1", sets: "", target: "", unit: .seconds, rest: "100s",
-                     tempo: "2320", plannedSets: 1),
-            Exercise(name: "Calf Stretch", group: "A2", sets: "3", target: "60", unit: .seconds, rest: "100s",
-                     tempo: "2320", cue: "Forward 60s, turned out 60s, turned in 60s"),
-            Exercise(name: "Tailor’s Pose", group: "B1", sets: "3-4", target: "8", rest: "60s", tempo: "2310"),
-            Exercise(name: "Straddle J-Curl", group: "C1", sets: "3-4", target: "5", rest: "90s", tempo: "6240"),
-            Exercise(name: "Pancake Lifts", group: "D1", sets: "2-3", target: "6", rest: "60s", tempo: "1013"),
+        // Notion "Training / Press", Flexibility Level 2: Day A → Flexibility 1 (Week A),
+        // Day B → Flexibility 2 (Week B). Replaced Pancake. Rest and tempo are blank in Notion.
+        Workout(name: "Flexibility 1", color: "yellow", weekA: true, weekB: false, exercises: [
+            Exercise(name: "Single Leg Calf Stretch", group: "A1", sets: "3", target: "60", unit: .seconds, perSide: true, rest: ""),
+            Exercise(name: "Tailor’s Pose", group: "A2", sets: "3", target: "3-5", rest: "", cue: "10s contractions"),
+            Exercise(name: "Pike Compression Overcoming Isometric + Lifts", group: "B1", sets: "3", target: "5-8", rest: "",
+                     cue: "3-5 x 10s isometric, then 5-8 lifts"),
+            Exercise(name: "Jefferson Curls", group: "B2", sets: "3", target: "5", rest: ""),
+        ]),
+        Workout(name: "Flexibility 2", color: "teal", weekA: false, weekB: true, exercises: [
+            Exercise(name: "Single Leg Calf Stretch", group: "A1", sets: "3", target: "60", unit: .seconds, perSide: true, rest: ""),
+            Exercise(name: "Tailor’s Pose", group: "A2", sets: "3", target: "3-5", rest: "", cue: "10s contractions"),
+            Exercise(name: "Side Leg Lifts Isometric + Lifts", group: "B1", sets: "3", target: "5-8", perSide: true, rest: "",
+                     cue: "3-5 x 10s isometric, then 5-8 lifts"),
+            Exercise(name: "Pancake Compressions", group: "B2", sets: "3", target: "5", rest: ""),
         ]),
     ]
 
-    static var pancake: Workout { workouts.first { $0.name == "Pancake" }! }
+    static var flexibility: [Workout] { workouts.filter { $0.name.hasPrefix("Flexibility") } }
 }
 
 /// Parses a Notion progression line like "9,8,8" or "12s,12s,12s" into per-set values.
@@ -111,14 +117,14 @@ nonisolated enum ProgressionParser {
 
 enum Seeder {
     static let didSeedKey = "didSeedProgram.v1"
-    /// Set once Pancake has been added (by the first seed, or by the upgrade for older installs).
-    static let didAddPancakeKey = "didAddPancake.v1"
+    /// Set once Pancake has been replaced by Flexibility 1/2 (by the first seed, or by the upgrade).
+    static let didReplacePancakeKey = "didReplacePancakeWithFlexibility.v1"
 
     /// Everything the store needs at launch: first-time seed, upgrades for older installs,
     /// and linking any exercise not yet in the library. Safe to run on every launch.
     static func prepare(context: ModelContext, defaults: UserDefaults = .standard, now: Date = .now) throws {
         try seedIfNeeded(context: context, defaults: defaults, now: now)
-        try addPancakeIfNeeded(context: context, defaults: defaults, now: now)
+        try replacePancakeIfNeeded(context: context, defaults: defaults, now: now)
         try ExerciseLibrary.linkUnlinked(context: context)
     }
 
@@ -128,8 +134,8 @@ enum Seeder {
         let existing = try context.fetchCount(FetchDescriptor<WorkoutTemplate>())
         if existing == 0 {
             try seed(context: context, now: now)
-            // A fresh seed already includes Pancake.
-            defaults.set(true, forKey: didAddPancakeKey)
+            // A fresh seed already has Flexibility 1/2 and never had Pancake.
+            defaults.set(true, forKey: didReplacePancakeKey)
         }
         defaults.set(true, forKey: didSeedKey)
     }
@@ -145,33 +151,65 @@ enum Seeder {
         try ExerciseLibrary.linkUnlinked(context: context)
     }
 
-    /// Adds Pancake to installs seeded before it existed. Runs once; if Pancake was deleted
-    /// later it stays deleted.
+    /// Replaces Pancake (both weeks) with Flexibility 1 (Week A) and Flexibility 2 (Week B) on
+    /// installs seeded before the switch. Runs once; if either is deleted later it stays deleted.
     ///
-    /// The rotation is replayed from history with today's week membership, so adding a workout
-    /// to both weeks would leave every past week unfinished and jump you back. To keep your
-    /// place, a reset is recorded just after the current week started, carrying the week count.
-    static func addPancakeIfNeeded(context: ModelContext, defaults: UserDefaults = .standard, now: Date = .now) throws {
-        guard !defaults.bool(forKey: didAddPancakeKey) else { return }
+    /// - Each Flexibility workout takes Pancake's place in its week's order.
+    /// - Library exercises only Pancake used are deleted (Tailor's Pose stays: Flexibility uses it).
+    ///   Logged Pancake sessions are history and stay, like deleting a library entry by hand.
+    /// - The rotation is replayed with today's week membership, so swapping Pancake out would leave
+    ///   every past week unfinished and jump you back. To keep your place, a reset is recorded just
+    ///   after the current week started, carrying the week count.
+    static func replacePancakeIfNeeded(context: ModelContext, defaults: UserDefaults = .standard, now: Date = .now) throws {
+        guard !defaults.bool(forKey: didReplacePancakeKey) else { return }
+        // Link first so every Pancake exercise (and logged history) points at its library entry.
+        try ExerciseLibrary.linkUnlinked(context: context)
+
         let templates = try context.fetch(FetchDescriptor<WorkoutTemplate>())
-        if !templates.contains(where: { $0.name == SeedProgram.pancake.name }) {
+        let pancake = templates.first { $0.name == "Pancake" }
+        let missing = SeedProgram.flexibility.filter { flex in !templates.contains { $0.name == flex.name } }
+
+        if pancake != nil || !missing.isEmpty {
             let sessions = try context.fetch(FetchDescriptor<WorkoutSession>())
             let resets = try context.fetch(FetchDescriptor<RotationReset>())
             let before = RotationEngine(templates: templates)
                 .state(for: RotationEngine.events(sessions: sessions, resets: resets))
 
-            insert(SeedProgram.pancake, order: (templates.map(\.order).max() ?? -1) + 1, context: context, now: now)
+            var nextOrder = (templates.map(\.order).max() ?? -1) + 1
+            var pancakeOrder = pancake?.order
+            for flex in missing {
+                let order = pancakeOrder ?? nextOrder
+                if pancakeOrder == nil { nextOrder += 1 }
+                pancakeOrder = nil
+                let template = insert(flex, order: order, context: context, now: now)
+                for week in [RotationWeek.a, .b] where template.isIn(week) {
+                    template.setPosition(pancake?.position(in: week), in: week)
+                }
+            }
+
+            let pancakeLibraryIDs = Set(pancake?.exercises.compactMap(\.libraryID) ?? [])
+            if let pancake { context.delete(pancake) }
 
             if let started = before.weekStartedAt {
                 context.insert(RotationReset(date: started.addingTimeInterval(0.001), week: before.week,
                                              weeksCompleted: before.weeksCompleted))
             }
             try context.save()
+
+            // Link the new slots (reusing Tailor's Pose), then drop library entries nothing uses.
+            try ExerciseLibrary.linkUnlinked(context: context)
+            let inUse = Set(try context.fetch(FetchDescriptor<WorkoutTemplate>()).flatMap(\.exercises).compactMap(\.libraryID))
+            for entry in try context.fetch(FetchDescriptor<LibraryExercise>())
+            where pancakeLibraryIDs.contains(entry.id) && !inUse.contains(entry.id) {
+                context.delete(entry)
+            }
+            try context.save()
         }
-        defaults.set(true, forKey: didAddPancakeKey)
+        defaults.set(true, forKey: didReplacePancakeKey)
     }
 
-    private static func insert(_ workout: SeedProgram.Workout, order: Int, context: ModelContext, now: Date) {
+    @discardableResult
+    private static func insert(_ workout: SeedProgram.Workout, order: Int, context: ModelContext, now: Date) -> WorkoutTemplate {
         let calendar = Calendar.current
         let template = WorkoutTemplate(
             name: workout.name, order: order, colorName: workout.color,
@@ -216,5 +254,6 @@ enum Seeder {
                 }
             }
         }
+        return template
     }
 }

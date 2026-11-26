@@ -35,20 +35,20 @@ struct WeekOrderTests {
     }
 
     @Test func defaultsToProgramOrder() throws {
-        #expect(try names(.a) == ["Push 1", "Pull 1", "Legs", "Pancake"])
-        #expect(try names(.b) == ["Push 2", "Pull 2", "Legs", "Pancake"])
+        #expect(try names(.a) == ["Push 1", "Pull 1", "Legs", "Flexibility 1"])
+        #expect(try names(.b) == ["Push 2", "Pull 2", "Legs", "Flexibility 2"])
     }
 
     @Test func moveReordersOnlyThatWeek() throws {
         // Legs (index 2) to just after Push 1.
         WeekOrder.move(in: .a, templates: try templates(), from: [2], to: 1)
-        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Pancake"])
-        #expect(try names(.b) == ["Push 2", "Pull 2", "Legs", "Pancake"])
+        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Flexibility 1"])
+        #expect(try names(.b) == ["Push 2", "Pull 2", "Legs", "Flexibility 2"])
 
-        // Week B can put the shared workouts somewhere else entirely.
-        WeekOrder.move(in: .b, templates: try templates(), from: [3], to: 0)
-        #expect(try names(.b) == ["Pancake", "Push 2", "Pull 2", "Legs"])
-        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Pancake"])
+        // Week B can put the shared workout somewhere else entirely.
+        WeekOrder.move(in: .b, templates: try templates(), from: [2], to: 0)
+        #expect(try names(.b) == ["Legs", "Push 2", "Pull 2", "Flexibility 2"])
+        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Flexibility 1"])
     }
 
     @Test func orderIsSaved() throws {
@@ -56,7 +56,7 @@ struct WeekOrderTests {
         try context.save()
         let fresh = ModelContext(container)
         let reloaded = try fresh.fetch(FetchDescriptor<WorkoutTemplate>())
-        #expect(WeekOrder.members(of: .a, in: reloaded).map(\.name) == ["Push 1", "Legs", "Pull 1", "Pancake"])
+        #expect(WeekOrder.members(of: .a, in: reloaded).map(\.name) == ["Push 1", "Legs", "Pull 1", "Flexibility 1"])
     }
 
     @Test func upNextFollowsTheWeekOrder() throws {
@@ -81,6 +81,6 @@ struct WeekOrderTests {
         WeekOrder.move(in: .a, templates: try templates(), from: [2], to: 1)
         let extra = WorkoutTemplate(name: "Handstands", order: -1, colorName: "teal", inWeekA: true, inWeekB: false)
         context.insert(extra)
-        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Pancake", "Handstands"])
+        #expect(try names(.a) == ["Push 1", "Legs", "Pull 1", "Flexibility 1", "Handstands"])
     }
 }

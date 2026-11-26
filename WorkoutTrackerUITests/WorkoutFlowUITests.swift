@@ -20,8 +20,9 @@ final class WorkoutFlowUITests: XCTestCase {
         XCTAssertTrue(app.buttons["workoutRow-Push 1"].exists)
         XCTAssertTrue(app.buttons["workoutRow-Pull 1"].exists)
         XCTAssertTrue(app.buttons["workoutRow-Legs"].exists)
-        XCTAssertTrue(app.buttons["workoutRow-Pancake"].exists)
-        XCTAssertTrue(app.buttons["nextWeekRow-Pancake"].exists)
+        XCTAssertTrue(app.buttons["workoutRow-Flexibility 1"].exists)
+        XCTAssertTrue(app.buttons["nextWeekRow-Flexibility 2"].exists)
+        XCTAssertFalse(app.buttons["workoutRow-Pancake"].exists)
     }
 
     @MainActor

@@ -126,13 +126,13 @@ struct ExerciseLibraryTests {
     @Test func addExerciseToSessionOnly() throws {
         let push1 = try template("Push 1")
         let session = SessionFactory.start(push1, at: now, context: context)
-        let added = SessionFactory.addExercise(try entry("Calf Stretch"), to: session)
+        let added = SessionFactory.addExercise(try entry("Single Leg Calf Stretch"), to: session)
 
         #expect(session.sortedExercises.last?.id == added.id)
         #expect(added.sets.count == 3)
         #expect(added.unit == .seconds)
         #expect(added.exerciseTemplateID == nil)
-        #expect(added.libraryID == (try entry("Calf Stretch")).id)
+        #expect(added.libraryID == (try entry("Single Leg Calf Stretch")).id)
         #expect(push1.exercises.count == 5)
     }
 
