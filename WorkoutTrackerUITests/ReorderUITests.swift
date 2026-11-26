@@ -27,8 +27,10 @@ final class ReorderUITests: XCTestCase {
     }
 
     /// The first reorder control for a workout's row (this week's comes before next week's).
+    /// iOS 26 labels it "Reorder Legs"; iOS 27 appends the row's label ("Reorder Legs, 6 exercises").
     @MainActor
     private func reorderHandle(_ name: String, in app: XCUIApplication) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Reorder \(name),")).firstMatch
+        let label = "Reorder \(name)"
+        return app.buttons.matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", label, "\(label),")).firstMatch
     }
 }
