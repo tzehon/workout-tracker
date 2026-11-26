@@ -52,9 +52,9 @@ final class ScreenshotTests: XCTestCase {
         shot("6b-library")
 
         app.tabBars.buttons["Today"].tap()
-        app.buttons["workoutRow-Pancake"].tap()
+        app.buttons["workoutRow-Flexibility 1"].tap()
         XCTAssertTrue(app.buttons["startWorkout"].waitForExistence(timeout: 5))
-        shot("6c-pancake")
+        shot("6c-flexibility")
         app.buttons["startWorkout"].tap()
         XCTAssertTrue(app.buttons["exerciseMenu-0"].waitForExistence(timeout: 5))
         app.buttons["exerciseMenu-0"].tap()

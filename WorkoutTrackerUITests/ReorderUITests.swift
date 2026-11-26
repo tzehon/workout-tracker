@@ -21,7 +21,7 @@ final class ReorderUITests: XCTestCase {
         legsHandle.press(forDuration: 0.5, thenDragTo: pullHandle)
         app.buttons["reorderWorkouts"].tap()
 
-        XCTAssertTrue(app.staticTexts["Push 1 · Legs · Pull 1 · Pancake"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Push 1 · Legs · Pull 1 · Flexibility 1"].waitForExistence(timeout: 5))
         XCTAssertLessThan(legs.frame.minY, pull.frame.minY)
         XCTAssertLessThan(app.buttons["nextWeekRow-Pull 2"].frame.minY, app.buttons["nextWeekRow-Legs"].frame.minY)
     }

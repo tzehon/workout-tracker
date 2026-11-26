@@ -42,16 +42,16 @@ struct SeedAndSessionTests {
 
     // MARK: Seed
 
-    @Test func seedsAllSixWorkoutsFromNotion() throws {
+    @Test func seedsAllSevenWorkoutsFromNotion() throws {
         let all = try templates()
-        #expect(all.map(\.name) == ["Push 1", "Pull 1", "Push 2", "Pull 2", "Legs", "Pancake"])
-        #expect(all.map(\.exercises.count) == [5, 5, 5, 5, 6, 5])
+        #expect(all.map(\.name) == ["Push 1", "Pull 1", "Push 2", "Pull 2", "Legs", "Flexibility 1", "Flexibility 2"])
+        #expect(all.map(\.exercises.count) == [5, 5, 5, 5, 6, 4, 4])
     }
 
     @Test func weekMembershipMatchesRequestedRotation() throws {
         let all = try templates()
-        #expect(all.filter(\.inWeekA).map(\.name) == ["Push 1", "Pull 1", "Legs", "Pancake"])
-        #expect(all.filter(\.inWeekB).map(\.name) == ["Push 2", "Pull 2", "Legs", "Pancake"])
+        #expect(all.filter(\.inWeekA).map(\.name) == ["Push 1", "Pull 1", "Legs", "Flexibility 1"])
+        #expect(all.filter(\.inWeekB).map(\.name) == ["Push 2", "Pull 2", "Legs", "Flexibility 2"])
     }
 
     @Test func seededExerciseDetailsMatchNotion() throws {
@@ -99,7 +99,7 @@ struct SeedAndSessionTests {
         let defaults = try #require(UserDefaults(suiteName: "test-\(UUID())"))
         try Seeder.seedIfNeeded(context: fresh.mainContext, defaults: defaults)
         try Seeder.seedIfNeeded(context: fresh.mainContext, defaults: defaults)
-        #expect(try fresh.mainContext.fetchCount(FetchDescriptor<WorkoutTemplate>()) == 6)
+        #expect(try fresh.mainContext.fetchCount(FetchDescriptor<WorkoutTemplate>()) == 7)
     }
 
     @Test func importedSessionsDoNotMoveRotation() throws {
@@ -139,7 +139,7 @@ struct SeedAndSessionTests {
     @Test func finishedSessionCountsTowardRotation() throws {
         let all = try templates()
         let engine = RotationEngine(templates: all)
-        for name in ["Push 1", "Legs", "Pancake", "Pull 1"] {
+        for name in ["Push 1", "Legs", "Flexibility 1", "Pull 1"] {
             let session = SessionFactory.start(try template(name), at: now, context: context)
             SessionFactory.finish(session, at: now.addingTimeInterval(Double(name.count) * 60))
         }

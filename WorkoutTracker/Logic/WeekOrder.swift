@@ -1,7 +1,7 @@
 import Foundation
 
 /// The order workouts are listed (and suggested) in each week. Each week has its own order,
-/// set by reordering on Today, so Legs and Pancake can sit in different places in Week A and
+/// set by reordering on Today, so Legs can sit in different places in Week A and
 /// Week B. Workouts never placed in a week (an untouched week, or one added to it later) come
 /// after the placed ones, in program order.
 ///
